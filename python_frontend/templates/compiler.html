@@ -1,0 +1,1754 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodeLENSE Compiler</title>
+  <link rel="stylesheet" href="/static/styles.css?v=20260831c">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --compiler-bg: #edf6ff;
+      --compiler-shell-bg: linear-gradient(180deg, rgba(241,245,249,1), rgba(226,232,240,1));
+      --compiler-header-bg: rgba(255,255,255,0.9);
+      --compiler-panel: rgba(255,255,255,0.94);
+      --compiler-panel-2: rgba(241,245,249,0.9);
+      --compiler-editor-bg: #f8fafc;
+      --compiler-editor-border: rgba(148,163,184,0.32);
+      --compiler-text: #0f172a;
+      --compiler-muted: #475569;
+      --compiler-accent: #0284c7;
+      --compiler-accent-2: #7c3aed;
+      --compiler-button: rgba(148,163,184,0.08);
+      --compiler-button-border: rgba(148,163,184,0.25);
+      --compiler-output: #f8fafc;
+      --compiler-surface: rgba(15,23,42,0.03);
+      --compiler-shadow: rgba(2, 132, 199, 0.12);
+    }
+
+    body.dark-theme {
+      --compiler-bg: #07111f;
+      --compiler-shell-bg: linear-gradient(180deg, #0b1220, #111827);
+      --compiler-header-bg: rgba(11, 18, 32, 0.92);
+      --compiler-panel: rgba(15, 23, 42, 0.96);
+      --compiler-panel-2: rgba(30, 41, 59, 0.92);
+      --compiler-editor-bg: #0b1220;
+      --compiler-editor-border: rgba(71, 85, 105, 0.6);
+      --compiler-text: #e2e8f0;
+      --compiler-muted: #94a3b8;
+      --compiler-button: rgba(51, 65, 85, 0.42);
+      --compiler-button-border: rgba(100, 116, 139, 0.48);
+      --compiler-output: #0b1220;
+      --compiler-surface: rgba(148, 163, 184, 0.08);
+      --compiler-shadow: rgba(14, 165, 233, 0.18);
+    }
+
+    body {
+      background: var(--compiler-bg);
+      color: var(--compiler-text);
+      margin: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: background 0.25s ease, color 0.25s ease;
+      overflow: hidden;
+    }
+
+    .compiler-shell {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--compiler-shell-bg);
+      color: var(--compiler-text);
+      transition: background 0.25s ease, color 0.25s ease;
+      overflow: hidden;
+    }
+
+    .compiler-header {
+      height: 74px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: 0 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: var(--compiler-header-bg);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .compiler-header-left,
+    .compiler-header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .compiler-header-left {
+      justify-content: flex-start;
+    }
+
+    .compiler-header-right {
+      justify-content: flex-end;
+    }
+
+    .brand-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      white-space: nowrap;
+      margin: 0 auto;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 34px;
+      letter-spacing: 0.02em;
+      line-height: 1;
+      font-weight: 800;
+    }
+
+    .compiler-brand-logo {
+      display: block;
+      width: 235px;
+      height: auto;
+    }
+
+    .brand-mark .code-word {
+      color: #0f172a;
+    }
+
+    .brand-mark .lense-word {
+      background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 52%, #34d399 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-left: 2px;
+    }
+
+    .compiler-btn {
+      border: 1px solid var(--compiler-button-border);
+      background: var(--compiler-button);
+      color: var(--compiler-text);
+      padding: 9px 14px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .upload-btn {
+      background: rgba(0, 242, 254, 0.08);
+      border-color: rgba(0, 242, 254, 0.22);
+    }
+
+    .theme-toggle-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      justify-content: center;
+      padding: 0;
+      background: rgba(255,255,255,0.03);
+    }
+
+    .compiler-btn:hover {
+      background: rgba(2,132,199,0.08);
+      border-color: rgba(2,132,199,0.25);
+      color: var(--compiler-text);
+      transform: translateY(-1px);
+    }
+
+    .compiler-btn.primary {
+      background: linear-gradient(135deg, rgba(2,132,199,0.12), rgba(124,58,237,0.12));
+      border-color: rgba(2,132,199,0.3);
+      box-shadow: 0 0 16px rgba(2,132,199,0.1);
+    }
+
+    .compiler-main {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .editor-panel,
+    .output-panel {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .editor-panel {
+      border-right: 1px solid rgba(148,163,184,0.18);
+      background: var(--compiler-panel);
+    }
+
+    .panel-topbar {
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      border-bottom: 1px solid rgba(148,163,184,0.18);
+      background: var(--compiler-panel-2);
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--compiler-text);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .panel-title .tiny-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 12px rgba(16,185,129,0.8);
+    }
+
+    .toolbar-inline {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .editor-wrap {
+      position: relative;
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      background: var(--compiler-editor-bg);
+      border: 1px solid var(--compiler-editor-border);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02), 0 12px 30px rgba(15,23,42,0.08);
+      margin: 16px;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .editor-gutter {
+      width: 52px;
+      background: rgba(148, 163, 184, 0.08);
+      border-right: 1px solid var(--compiler-editor-border);
+      color: var(--compiler-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      padding: 18px 8px 18px 0;
+      text-align: right;
+      user-select: none;
+      flex-shrink: 0;
+      white-space: pre;
+      overflow: hidden;
+    }
+
+    body.dark-theme .editor-gutter {
+      background: rgba(30, 41, 59, 0.72);
+    }
+
+    .code-highlight-layer,
+    .code-editor {
+      position: absolute;
+      inset: 0 0 0 52px;
+      width: calc(100% - 52px);
+      min-height: 100%;
+      padding: 18px 22px 18px 18px;
+      margin: 0;
+      box-sizing: border-box;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      tab-size: 4;
+      overflow: auto;
+    }
+
+    .code-highlight-layer {
+      pointer-events: none;
+      display: block;
+      color: #0f172a;
+      background: transparent;
+      z-index: 1;
+    }
+
+    body.dark-theme .code-highlight-layer {
+      color: #e2e8f0;
+    }
+
+    .code-editor {
+      z-index: 2;
+      background: transparent;
+      color: transparent;
+      border: none;
+      resize: none;
+      outline: none;
+      caret-color: var(--compiler-text);
+      text-shadow: 0 0 0 transparent;
+      overflow: auto;
+    }
+
+    body.dark-theme .code-editor {
+      caret-color: #e2e8f0;
+    }
+
+    .code-editor::selection {
+      background: rgba(14, 165, 233, 0.22);
+    }
+
+    .token.keyword { color: #7c3aed; }
+    .token.function { color: #0369a1; }
+    .token.loop { color: #0f766e; }
+    .token.builtin { color: #dc2626; }
+    .token.string { color: #15803d; }
+    .token.number { color: #ea580c; }
+    .token.operator { color: #475569; }
+    .token.comment { color: #64748b; font-style: italic; }
+    .token.class { color: #7c2d12; }
+
+    .panel-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      min-height: 42px;
+      padding: 0 18px;
+      border-top: 1px solid rgba(148,163,184,0.18);
+      background: rgba(255,255,255,0.9);
+      color: var(--compiler-muted);
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    body.dark-theme .panel-footer,
+    body.dark-theme .output-topbar {
+      background: rgba(15, 23, 42, 0.94);
+    }
+
+    .output-panel {
+      background: var(--compiler-panel);
+      min-width: 0;
+    }
+
+    .output-topbar {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 20px;
+      border-bottom: 1px solid rgba(148,163,184,0.18);
+      background: rgba(255,255,255,0.92);
+    }
+
+    .output-heading {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+    }
+
+    .output-heading .tiny-dot {
+      flex-shrink: 0;
+    }
+
+    .output-kicker {
+      color: var(--compiler-text);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .output-subtitle {
+      margin-top: 3px;
+      color: var(--compiler-muted);
+      font-size: 11px;
+    }
+
+    .output-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .clear-output-btn {
+      border: 1px solid rgba(148,163,184,0.3);
+      border-radius: 8px;
+      padding: 7px 10px;
+      background: transparent;
+      color: var(--compiler-muted);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .clear-output-btn:hover {
+      border-color: var(--compiler-accent);
+      color: var(--compiler-text);
+    }
+
+    .output-body {
+      flex: 1;
+      padding: 18px;
+      min-height: 0;
+      min-width: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: stretch;
+      box-sizing: border-box;
+    }
+
+    .console-box {
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(241,245,249,0.98));
+      border: 1px solid rgba(148,163,184,0.2);
+      border-radius: 12px;
+      padding: 16px;
+      min-height: 180px;
+      flex: 0 0 auto;
+      box-sizing: border-box;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.5);
+    }
+
+    body.dark-theme .console-box {
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.94), rgba(15, 23, 42, 0.98));
+      box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.08);
+    }
+
+    .console-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      color: var(--compiler-muted);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .console-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--compiler-text);
+    }
+
+    .console-label::before {
+      content: '>'; 
+      color: var(--compiler-accent);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+    }
+
+    .program-input-panel {
+      display: none;
+      margin-top: 10px;
+      padding: 0;
+    }
+
+    .program-input-panel.visible {
+      display: flex;
+    }
+
+    .program-input-title {
+      display: none;
+    }
+
+    .program-input-help {
+      display: none;
+    }
+
+    .program-input-fields {
+      display: block;
+    }
+
+    .program-input-fields textarea {
+      flex: 1 1 auto;
+      width: 100%;
+      min-height: 96px;
+      box-sizing: border-box;
+      padding: 10px;
+      border: 1px solid rgba(148,163,184,0.35);
+      border-radius: 8px;
+      background: var(--compiler-editor-bg);
+      color: var(--compiler-text);
+      font: 13px/1.5 'JetBrains Mono', monospace;
+      outline: none;
+      resize: vertical;
+    }
+
+    .program-input-fields textarea:focus {
+      border-color: var(--compiler-accent);
+      box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.14);
+    }
+
+    .program-input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .program-input-row label {
+      color: var(--compiler-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .program-input-row > span {
+      flex: 0 1 auto;
+      max-width: 62%;
+      color: var(--compiler-accent);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .program-input-row input {
+      flex: 1 1 auto;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      padding: 9px 10px;
+      border: 1px solid rgba(148,163,184,0.35);
+      border-radius: 8px;
+      background: var(--compiler-editor-bg);
+      color: var(--compiler-text);
+      font: 13px 'JetBrains Mono', monospace;
+      outline: none;
+    }
+
+    .program-input-row input:focus {
+      border-color: var(--compiler-accent);
+      box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.14);
+    }
+
+    .program-input-submit {
+      display: none;
+      border: 1px solid rgba(14, 165, 233, 0.35);
+      border-radius: 8px;
+      padding: 8px 12px;
+      background: rgba(14, 165, 233, 0.14);
+      color: var(--compiler-text);
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .console-window {
+      background: #f8fafc;
+      border: 1px solid rgba(148,163,184,0.18);
+      border-radius: 10px;
+      height: 150px;
+      min-height: 150px;
+      max-height: 150px;
+      min-width: 0;
+      padding: 12px 14px;
+      box-sizing: border-box;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #0f172a;
+      white-space: pre-wrap;
+      overflow: auto;
+    }
+
+    body.dark-theme .console-window {
+      background: #0b1220;
+      border-color: rgba(71, 85, 105, 0.55);
+      color: #e2e8f0;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      width: 100%;
+      flex: 0 0 auto;
+      margin-top: 0;
+    }
+
+    .metric-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .metric-card {
+      background: rgba(255,255,255,0.8);
+      border: 1px solid rgba(148,163,184,0.25);
+      border-radius: 12px;
+      padding: 12px 14px;
+      min-width: 0;
+      min-height: 82px;
+      box-sizing: border-box;
+    }
+
+    .analysis-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: rgba(255,255,255,0.8);
+      border: 1px solid rgba(148,163,184,0.25);
+      border-radius: 14px;
+      padding: 16px;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+
+    .complexity-filter-label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--compiler-muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .complexity-filter-select {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid var(--compiler-editor-border);
+      border-radius: 8px;
+      background: var(--compiler-panel-2);
+      color: var(--compiler-text);
+      font: inherit;
+      color-scheme: light;
+    }
+
+    .complexity-filter-select option {
+      background: var(--compiler-panel);
+      color: var(--compiler-text);
+    }
+
+    body.dark-theme .complexity-filter-select {
+      color-scheme: dark;
+    }
+
+    .analysis-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .analysis-title {
+      font-size: 11px;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--compiler-muted);
+      font-weight: 800;
+    }
+
+    .complexity-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 80px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(14,165,233,0.18), rgba(37,99,235,0.22));
+      border: 1px solid rgba(14,165,233,0.28);
+      color: var(--compiler-text);
+      font-weight: 800;
+      font-size: 13px;
+      box-shadow: 0 0 18px rgba(14,165,233,0.18);
+    }
+
+    .complexity-graph {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      align-items: end;
+      gap: 14px;
+      height: 150px;
+      padding: 12px 8px 0;
+      box-sizing: border-box;
+    }
+
+    .graph-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: end;
+      gap: 8px;
+      height: 100%;
+    }
+
+    .graph-track {
+      position: relative;
+      width: 100%;
+      max-width: 44px;
+      height: 100%;
+      min-height: 70px;
+      border-radius: 16px 16px 10px 10px;
+      background: rgba(148, 163, 184, 0.14);
+      border: 1px solid rgba(148,163,184,0.18);
+      overflow: hidden;
+      display: flex;
+      align-items: end;
+      justify-content: center;
+    }
+
+    .graph-fill {
+      position: relative;
+      display: block;
+      width: 100%;
+      height: 20%;
+      border-radius: inherit;
+      background: linear-gradient(180deg, #7dd3fc 0%, #38bdf8 28%, #2563eb 100%);
+      box-shadow: 0 0 18px rgba(14,165,233,0.35);
+      opacity: 0.32;
+      transition: height 0.55s ease, opacity 0.35s ease, transform 0.35s ease;
+      overflow: hidden;
+    }
+
+    .graph-fill.active {
+      opacity: 1;
+      height: 100%;
+      animation: complexityPulse 1.8s ease-in-out infinite alternate;
+    }
+
+    .graph-fill::after {
+      content: '';
+      position: absolute;
+      inset: 0 0 0 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0.02));
+      animation: chartShimmer 2.2s linear infinite;
+    }
+
+    .graph-label {
+      color: var(--compiler-muted);
+      font-size: 11px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      text-align: center;
+    }
+
+    .analysis-explanation {
+      border-top: 1px solid rgba(148,163,184,0.18);
+      padding-top: 12px;
+    }
+
+    .analysis-explanation h4 {
+      margin: 0 0 8px;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--compiler-muted);
+    }
+
+    .analysis-explanation ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--compiler-text);
+      display: grid;
+      gap: 7px;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    body.dark-theme .metric-card,
+    body.dark-theme .feature-item,
+    body.dark-theme .analysis-panel {
+      background: rgba(30, 41, 59, 0.72);
+      border-color: rgba(71, 85, 105, 0.55);
+    }
+
+    @keyframes complexityPulse {
+      0% { transform: scaleY(0.98); }
+      100% { transform: scaleY(1); }
+    }
+
+    @keyframes chartShimmer {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100%); }
+    }
+
+    .metric-label {
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--compiler-muted);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .metric-value {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--compiler-text);
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(16,185,129,0.12);
+      color: #047857;
+      border: 1px solid rgba(16,185,129,0.22);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .status-pill .tiny-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 10px rgba(16,185,129,0.8);
+    }
+
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .feature-list-title {
+      color: var(--compiler-muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      min-width: 0;
+      box-sizing: border-box;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(148,163,184,0.2);
+      color: var(--compiler-text);
+      font-size: 13px;
+    }
+
+    .feature-item strong {
+      color: var(--compiler-text);
+    }
+
+    @media (max-width: 980px) {
+      .compiler-main {
+        grid-template-columns: 1fr;
+      }
+
+      .editor-panel {
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="compiler-shell">
+    <header class="compiler-header">
+      <div class="compiler-header-left">
+        <a href="/" class="compiler-btn">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+          Back to Workspace
+        </a>
+      </div>
+
+      <a href="/" aria-label="CodeLENSE home">
+        <img src="/static/logo_light.png" alt="CodeLENSE" class="compiler-brand-logo" id="compilerBrandLogo" />
+      </a>
+
+      <div class="compiler-header-right">
+        <button class="compiler-btn" type="button" id="formatBtn">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            <path d="M8 7h8M8 11h8M8 15h5"/>
+          </svg>
+          Format
+        </button>
+        <button class="compiler-btn" type="button" id="sampleBtn">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>
+            <path d="M14 2v6h6"/>
+            <path d="M9 13h6M9 17h6"/>
+          </svg>
+          Sample
+        </button>
+        <button class="compiler-btn upload-btn" type="button" id="uploadFileBtn">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <path d="M17 8l-5-5-5 5"/>
+            <path d="M12 3v12"/>
+          </svg>
+          Upload
+        </button>
+        <button class="compiler-btn theme-toggle-btn" type="button" id="themeToggleBtn" aria-label="Toggle theme">
+          <svg id="themeIconSun" class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+          <svg id="themeIconMoon" class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="compiler-main">
+      <section class="editor-panel">
+        <div class="panel-topbar">
+          <div class="panel-title">
+            <span class="tiny-dot"></span>
+            <span>Python Compiler</span>
+          </div>
+          <button class="compiler-btn primary" type="button" id="runCodeBtn">
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8 5.14v13.72a1 1 0 0 0 1.54.84l9.94-6.86a1 1 0 0 0 0-1.68L9.54 4.3A1 1 0 0 0 8 5.14z"/>
+            </svg>
+            Run Code
+          </button>
+        </div>
+
+        <div class="editor-wrap">
+          <div class="editor-gutter" id="editorGutter">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11</div>
+          <pre class="code-highlight-layer" id="codeHighlightLayer" aria-hidden="true"></pre>
+          <textarea class="code-editor" id="compilerCode" spellcheck="false">def fibonacci(n):
+    if n <= 1:
+        return n
+    a, b = 0, 1
+    for _ in range(2, n + 1):
+        a, b = b, a + b
+    return b
+
+for i in range(1, 11):
+    print(f"F({i}) = {fibonacci(i)}")</textarea>
+        </div>
+
+        <div class="panel-footer">
+          <span>Python 3.11</span>
+          <span id="editorStats">Lines: 10 &nbsp; | &nbsp; Chars: 182</span>
+        </div>
+      </section>
+
+      <aside class="output-panel">
+        <div class="output-topbar">
+          <div class="output-heading">
+            <span class="tiny-dot" style="background:#00f2fe; box-shadow:0 0 12px rgba(0,242,254,0.8);"></span>
+            <div>
+              <div class="output-kicker">Execution Output</div>
+              <div class="output-subtitle">Live results from your Python program</div>
+            </div>
+          </div>
+          <div class="output-actions">
+            <button class="clear-output-btn" type="button" id="clearOutputBtn">Clear Output</button>
+            <span class="status-pill"><span class="tiny-dot"></span> Ready</span>
+          </div>
+        </div>
+
+        <div class="output-body">
+          <div class="console-box">
+            <div class="console-header">
+              <span class="console-label">Console</span>
+              <span>Runtime</span>
+            </div>
+            <div class="console-window" id="outputConsole">F(1) = 1
+F(2) = 1
+F(3) = 2
+F(4) = 3
+F(5) = 5
+F(6) = 8
+F(7) = 13
+F(8) = 21
+F(9) = 34
+F(10) = 55</div>
+            <div class="program-input-panel" id="programInputPanel">
+              <div class="program-input-title">Program input</div>
+              <div class="program-input-help">Enter one value per line. This supports repeated input for games and loops.</div>
+              <div class="program-input-fields" id="programInputFields"></div>
+              <button class="program-input-submit" type="button" id="submitProgramInput">Run with these values</button>
+            </div>
+          </div>
+
+          <div class="mini-grid">
+            <div class="metric-card">
+              <div class="metric-label">Runtime</div>
+              <div class="metric-value" id="runtimeValue">0.02s</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Status</div>
+              <div class="metric-value" id="statusValue" style="font-size:18px;">Success</div>
+            </div>
+          </div>
+
+          <div class="analysis-panel">
+            <div class="analysis-header">
+              <div class="analysis-title">Time Complexity</div>
+              <span class="complexity-badge" id="timeComplexityBadge">O(n)</span>
+            </div>
+
+            <div class="complexity-graph" aria-label="Time complexity chart">
+              <div class="graph-column">
+                <div class="graph-track"><div class="graph-fill" data-complexity="O(1)"></div></div>
+                <span class="graph-label">O(1)</span>
+              </div>
+              <div class="graph-column">
+                <div class="graph-track"><div class="graph-fill" data-complexity="O(n)"></div></div>
+                <span class="graph-label">O(n)</span>
+              </div>
+              <div class="graph-column">
+                <div class="graph-track"><div class="graph-fill" data-complexity="O(n²)"></div></div>
+                <span class="graph-label">O(n²)</span>
+              </div>
+              <div class="graph-column">
+                <div class="graph-track"><div class="graph-fill" data-complexity="O(n^k)"></div></div>
+                <span class="graph-label">O(n^k)</span>
+              </div>
+              <div class="graph-column">
+                <div class="graph-track"><div class="graph-fill" data-complexity="O(2^n)"></div></div>
+                <span class="graph-label">O(2^n)</span>
+              </div>
+            </div>
+
+            <div class="analysis-explanation">
+              <h4>Why this happens</h4>
+              <ul id="timeComplexityReasons">
+                <li>The program visits each element once in a single pass.</li>
+                <li>Work grows in direct proportion to input size as n increases.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="analysis-panel">
+            <div class="analysis-header">
+              <div class="analysis-title">Space Complexity</div>
+              <span class="complexity-badge" id="spaceComplexityBadge">O(n)</span>
+            </div>
+
+            <div class="complexity-graph" aria-label="Space complexity chart">
+              <div class="graph-column">
+                <div class="graph-track"><div class="graph-fill space-fill" data-complexity="O(1)"></div></div>
+                <span class="graph-label">O(1)</span>
+              </div>
+              <div class="graph-column">
+                <div class="graph-track"><div class="graph-fill space-fill" data-complexity="O(n)"></div></div>
+                <span class="graph-label">O(n)</span>
+              </div>
+              <div class="graph-column">
+                <div class="graph-track"><div class="graph-fill space-fill" data-complexity="O(n²)"></div></div>
+                <span class="graph-label">O(n²)</span>
+              </div>
+              <div class="graph-column">
+                <div class="graph-track"><div class="graph-fill space-fill" data-complexity="O(n^k)"></div></div>
+                <span class="graph-label">O(n^k)</span>
+              </div>
+              <div class="graph-column">
+                <div class="graph-track"><div class="graph-fill space-fill" data-complexity="O(2^n)"></div></div>
+                <span class="graph-label">O(2^n)</span>
+              </div>
+            </div>
+
+            <div class="analysis-explanation">
+              <h4>Why this happens</h4>
+              <ul id="spaceComplexityReasons">
+                <li>The program stores input-sized data or an extra structure while processing.</li>
+                <li>Memory consumption rises with the amount of data being held at once.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="analysis-panel complexity-explorer-panel" style="margin-top:18px;">
+            <div class="analysis-header">
+              <div class="analysis-title">Complexity Explorer</div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+              <div>
+                <label class="complexity-filter-label" for="complexityFilterType">Category</label>
+                <select class="complexity-filter-select" id="complexityFilterType">
+                  <option value="time">Time Complexity</option>
+                  <option value="space">Space Complexity</option>
+                </select>
+              </div>
+              <div>
+                <label class="complexity-filter-label" for="complexityFilterValue">Pattern</label>
+                <select class="complexity-filter-select" id="complexityFilterValue">
+                  <option value="O(1)">O(1)</option>
+                  <option value="O(n)" selected>O(n)</option>
+                  <option value="O(n²)">O(n²)</option>
+                  <option value="O(n^k)">O(n^k)</option>
+                  <option value="O(2^n)">O(2^n)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="analysis-explanation" style="margin-top: 0;">
+                <h4 id="complexitySuggestionTitle">Code-specific complexity suggestion</h4>
+                <p id="complexitySuggestionNote" style="margin:0 0 10px; color:var(--text-muted); font-size:12px;">Choose a target to generate a suggestion from the current compiler code.</p>
+                <pre id="complexitySuggestionCode" style="margin:0; background: rgba(15, 23, 42, 0.7); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px; color: var(--text-main); overflow:auto; white-space:pre-wrap; font-family:'JetBrains Mono', monospace; font-size:12px; line-height:1.6;">Select a complexity target to see a code suggestion.</pre>
+                <button class="compiler-btn" type="button" id="applyComplexitySuggestionBtn" style="margin-top:12px;" disabled>Apply suggestion</button>
+            </div>
+          </div>
+
+          <div class="feature-list-title">Compiler workspace</div>
+          <div class="feature-list">
+            <div class="feature-item"><strong>Code Editor</strong><span>Live typing</span></div>
+            <div class="feature-item"><strong>Run Script</strong><span>Execute Python</span></div>
+            <div class="feature-item"><strong>Console Output</strong><span>Real-time logs</span></div>
+            <div class="feature-item"><strong>Suggestions</strong><span>Future-ready</span></div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    const editor = document.getElementById('compilerCode');
+    const output = document.getElementById('outputConsole');
+    const runBtn = document.getElementById('runCodeBtn');
+    const clearOutputBtn = document.getElementById('clearOutputBtn');
+    const clearBtn = document.getElementById('clearCodeBtn');
+    const formatBtn = document.getElementById('formatBtn');
+    const sampleBtn = document.getElementById('sampleBtn');
+    const editorStats = document.getElementById('editorStats');
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeIconSun = document.getElementById('themeIconSun');
+    const themeIconMoon = document.getElementById('themeIconMoon');
+    const compilerBrandLogo = document.getElementById('compilerBrandLogo');
+    const uploadFileBtn = document.getElementById('uploadFileBtn');
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.py,.txt';
+    const editorGutter = document.getElementById('editorGutter');
+    const highlightLayer = document.getElementById('codeHighlightLayer');
+
+    const tokenPattern = /(#[^\n]*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')|(\b(?:def|return|if|else|for|while|in|and|or|not|True|False|None|try|except|raise|class|import|from|as|with|lambda|yield|pass|break|continue)\b)|(\b(?:print|range|len|int|str|float|list|dict|set|sum|max|min|sorted|open)\b)|(\b[A-Za-z_][A-Za-z0-9_]*(?=\s*\())|(\b\d+(?:\.\d+)?\b)/g;
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function syntaxHighlight(code) {
+      if (!code) return '&nbsp;';
+      return code.replace(tokenPattern, (match, literalOrComment, keyword, builtin, functionName, number) => {
+        const tokenType = literalOrComment
+          ? (literalOrComment.startsWith('#') ? 'comment' : 'string')
+          : keyword
+            ? (keyword === 'for' || keyword === 'while' ? 'loop' : 'keyword')
+            : builtin
+              ? 'builtin'
+              : functionName
+                ? 'function'
+                : 'number';
+        return `<span class="token ${tokenType}">${escapeHtml(match)}</span>`;
+      });
+    }
+
+    function updateStats() {
+      const value = editor.value;
+      const lines = value.length ? value.split('\n').length : 1;
+      const chars = value.length;
+      editorStats.textContent = `Lines: ${lines}  |  Chars: ${chars}`;
+
+      const lineNumbers = Array.from({ length: Math.max(lines, 1) }, (_, index) => index + 1).join('\n');
+      editorGutter.textContent = lineNumbers;
+      highlightLayer.innerHTML = syntaxHighlight(value);
+      highlightLayer.scrollTop = editor.scrollTop;
+      highlightLayer.scrollLeft = editor.scrollLeft;
+    }
+
+    editor.addEventListener('input', updateStats);
+    editor.addEventListener('scroll', () => {
+      editorGutter.scrollTop = editor.scrollTop;
+      highlightLayer.scrollTop = editor.scrollTop;
+      highlightLayer.scrollLeft = editor.scrollLeft;
+    });
+    updateStats();
+
+    function applyTheme(isDark) {
+      document.body.classList.toggle('dark-theme', isDark);
+      themeIconSun.style.display = isDark ? 'none' : 'block';
+      themeIconMoon.style.display = isDark ? 'block' : 'none';
+      compilerBrandLogo.src = isDark ? '/static/logo.png' : '/static/logo_light.png';
+      themeToggleBtn.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
+    }
+
+    const savedTheme = localStorage.getItem('compiler-theme');
+    applyTheme(savedTheme === 'dark');
+
+    themeToggleBtn.addEventListener('click', () => {
+      const isDark = !document.body.classList.contains('dark-theme');
+      applyTheme(isDark);
+      localStorage.setItem('compiler-theme', isDark ? 'dark' : 'light');
+    });
+
+    uploadFileBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        editor.value = e.target.result;
+        updateStats();
+      };
+      reader.readAsText(file);
+    });
+
+    sampleBtn.addEventListener('click', () => {
+      editor.value = `def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n ** 0.5) + 1):
+        if n % i == 0:
+            return False
+    return True
+
+for num in range(1, 21):
+    if is_prime(num):
+        print(num)
+`;
+      updateStats();
+      editor.focus();
+    });
+
+    formatBtn.addEventListener('click', () => {
+      const text = editor.value;
+      const formatted = text
+        .replace(/\n{3,}/g, '\n\n')
+        .replace(/[ \t]+\n/g, '\n');
+      editor.value = formatted.trim() + '\n';
+      updateStats();
+    });
+
+    if (clearBtn) clearBtn.addEventListener('click', () => {
+      editor.value = '';
+      output.textContent = 'Console cleared.';
+      updateStats();
+      editor.focus();
+    });
+
+    clearOutputBtn.addEventListener('click', () => {
+      output.textContent = 'Output cleared. Run your Python program to see results.';
+      programInputPanel.classList.remove('visible');
+      document.getElementById('runtimeValue').textContent = '--';
+      document.getElementById('statusValue').textContent = 'Ready';
+    });
+
+    const programInputPanel = document.getElementById('programInputPanel');
+    const programInputFields = document.getElementById('programInputFields');
+    const submitProgramInput = document.getElementById('submitProgramInput');
+    const complexityFilterType = document.getElementById('complexityFilterType');
+    const complexityFilterValue = document.getElementById('complexityFilterValue');
+    const complexitySuggestionTitle = document.getElementById('complexitySuggestionTitle');
+    const complexitySuggestionNote = document.getElementById('complexitySuggestionNote');
+    const complexitySuggestionCode = document.getElementById('complexitySuggestionCode');
+    const applyComplexitySuggestionBtn = document.getElementById('applyComplexitySuggestionBtn');
+    const complexityReasonMap = {
+      'None': [
+        'The program is empty or contains no meaningful work to analyze.',
+        'There are no loops, recursion, or repeated operations to measure.',
+        'Because the code does not iterate over input, no growing work pattern is present.',
+        'The effective workload is effectively zero for complexity analysis.'
+      ],
+      'O(1)': [
+        'The code performs a fixed number of operations.',
+        'Runtime stays nearly constant as input size grows.',
+        'No iteration depends on the full dataset size.',
+        'The algorithm does not scale with n after the initial setup.'
+      ],
+      'O(n)': [
+        'The program processes each element once in a single pass.',
+        'Work grows proportionally with input size as n increases.',
+        'Each iteration handles one item without repeating previous work.',
+        'The total effort is directly proportional to the number of inputs.'
+      ],
+      'O(n²)': [
+        'Nested loops repeat work across the same input multiple times.',
+        'Each element triggers another pass, so total work grows quadratically.',
+        'The inner loop redoes the same kind of work for every outer iteration.',
+        'This creates a multiplication effect between the loop sizes.'
+      ],
+      'O(n^k)': [
+        'Multiple nested loops or repeated layers of iteration appear.',
+        'Each additional nesting level multiplies the work by another factor of n.',
+        'The algorithm spreads work across several dependent loop levels.',
+        'The complete effort rises sharply as the nesting depth increases.'
+      ],
+      'O(2^n)': [
+        'The code branches recursively or recomputes subproblems repeatedly.',
+        'A single extra input value doubles the number of operations.',
+        'Subproblems are solved repeatedly instead of being cached or reused.',
+        'The workload expands exponentially as the input grows.'
+      ]
+    };
+
+    const spaceReasonMap = {
+      'None': [
+        'No meaningful memory footprint is detected in the code.',
+        'The program does not keep additional data structures in memory.',
+        'There are no repeated allocations or stored intermediate states.',
+        'The algorithm effectively uses constant memory during execution.'
+      ],
+      'O(1)': [
+        'Only a few constant-size variables are used.',
+        'Memory usage stays flat even as input size increases.',
+        'No large input-sized storage is created during processing.',
+        'The program keeps just a handful of values in memory at once.'
+      ],
+      'O(n)': [
+        'The program stores or accumulates data proportional to the input.',
+        'Extra memory grows alongside the number of values being processed.',
+        'A list, array, or result set is retained for the full input size.',
+        'The memory requirement rises in direct proportion to n.'
+      ],
+      'O(n²)': [
+        'The algorithm keeps a matrix or nested structure proportional to the square of the input.',
+        'Memory expands across rows and columns as the data grows.',
+        'Each item may contribute to a second-dimensional storage structure.',
+        'The memory footprint scales with the product of the dimensions.'
+      ],
+      'O(n^k)': [
+        'Multiple nested data structures are created as the problem size expands.',
+        'Each deeper layer multiplies the memory required by another factor of n.',
+        'The algorithm stores intermediate results for several dimensions at once.',
+        'The memory footprint compounds as the structure depth increases.'
+      ],
+      'O(2^n)': [
+        'Recursive branching keeps many intermediate states in memory at once.',
+        'Each new input level doubles the amount of memory retained.',
+        'The algorithm must hold many pending states to continue recursion.',
+        'The memory cost grows exponentially with the problem size.'
+      ]
+    };
+
+    let complexityAnalysisSequence = 0;
+    let complexityAdviceTimer = null;
+
+    function getCodeSignals(code) {
+      const loops = [...code.matchAll(/^(\s*)(?:async\s+)?(?:for|while)\b/gm)];
+      const loopDepth = loops.reduce((deepest, match) => {
+        const indent = match[1].replace(/\t/g, '    ').length;
+        return Math.max(deepest, loops.filter(candidate => candidate[1].replace(/\t/g, '    ').length <= indent).length ? 1 : 0);
+      }, 0);
+      const nestedLoop = loops.some((outer, index) => loops.slice(index + 1).some(inner =>
+        inner[1].replace(/\t/g, '    ').length > outer[1].replace(/\t/g, '    ').length
+      ));
+      const functionNames = [...code.matchAll(/^\s*def\s+([A-Za-z_]\w*)\s*\(/gm)].map(match => match[1]);
+      const lines = code.split('\n');
+      const recursive = functionNames.some(name => {
+        const definitionIndex = lines.findIndex(line => new RegExp(`^\\s*def\\s+${name}\\s*\\(`).test(line));
+        if (definitionIndex < 0) return false;
+        const definitionIndent = lines[definitionIndex].match(/^\s*/)[0].replace(/\t/g, '    ').length;
+        const body = [];
+        for (const line of lines.slice(definitionIndex + 1)) {
+          if (line.trim() && line.match(/^\s*/)[0].replace(/\t/g, '    ').length <= definitionIndent) break;
+          body.push(line);
+        }
+        return new RegExp(`\\b${name}\\s*\\(`).test(body.join('\n'));
+      });
+      const retainsCollection = /\.append\s*\(|\.extend\s*\(|\b(?:list|dict|set)\s*\(|\w+\s*=\s*\[\s*\]|\[[^\n]*\bfor\b/.test(code);
+      return { loopCount: loops.length, nestedLoop, recursive, retainsCollection };
+    }
+
+    function buildComplexityAdvice(code, category, target, detected, signals) {
+      const label = category === 'time' ? 'time' : 'space';
+      const current = detected || 'None';
+      if (!code.trim()) return 'Add Python code in the compiler to receive code-specific analysis.';
+      if (current === target) return `The AST-based estimate for this code is already ${target} ${label} complexity. This is a heuristic, not a proof.`;
+
+      if (category === 'time') {
+        if (target === 'O(2^n)' && !signals.recursive) return `This code is estimated at ${current}. To reach O(2^n), it would need branching recursion or exhaustive search; that would add substantial work and is not a safe automatic rewrite.`;
+        if (target === 'O(n^k)' && !signals.nestedLoop) return `This code is estimated at ${current}. O(n^k) generally requires k dependent input-sized loops; adding them would deliberately make this code slower.`;
+        if (target === 'O(n²)' && !signals.nestedLoop) return `This code is estimated at ${current}. O(n²) usually comes from two input-sized passes nested together; introducing that pattern would add work, not optimize the current algorithm.`;
+        if (target === 'O(n)' && signals.nestedLoop) return `This code has ${signals.loopCount} loop statements, including nested loops, and is estimated at ${current}. If the inner loop searches for membership or a matching key, a set or dictionary may reduce repeated scans; the exact rewrite depends on what each loop computes.`;
+        if (target === 'O(n)' && signals.recursive) return `This code contains recursive calls. If they recompute the same subproblems, memoization or dynamic programming may reduce runtime; confirm repeated states before changing it.`;
+        return `This code is estimated at ${current}. The requested ${target} target cannot be guaranteed from loop counts alone; preserve the program's behavior and inspect its input-dependent operations before rewriting.`;
+      }
+
+      if (target === 'O(1)' && signals.retainsCollection) return `This code creates or grows a collection and is estimated at ${current} space. To approach O(1) auxiliary space, process items incrementally, use a generator, or update values in place when its output requirements allow it.`;
+      if (target === 'O(n)' && !signals.retainsCollection) return `This code is estimated at ${current} space and no growing collection was detected. O(n) space would require retaining input-sized data, such as a result list or memoization table; avoid adding it unless needed.`;
+      if (['O(n²)', 'O(n^k)', 'O(2^n)'].includes(target)) return `This code is estimated at ${current} space. The selected ${target} target requires retaining a matrix, higher-dimensional structure, or exponentially many states. That would add memory rather than improve this program.`;
+      return `This code is estimated at ${current} space. The best memory change depends on which values must remain available; the current source is shown below for context.`;
+    }
+
+    function buildComplexityCodeSuggestion(code, category, target, detected, signals) {
+      if (!code.trim()) return { code: '', applicable: false };
+      if (detected === target) {
+        return {
+          code: `# No rewrite needed: the current code already matches ${target} ${category} complexity.`,
+          applicable: false
+        };
+      }
+
+      function replaceFunctionDefinition(source, functionName, replacement) {
+        const lines = source.split('\n');
+        const definitionPattern = new RegExp(`^\\s*def\\s+${functionName}\\s*\\(`);
+        const start = lines.findIndex(line => definitionPattern.test(line));
+        if (start < 0) return replacement;
+
+        const indent = lines[start].match(/^\s*/)[0];
+        const indentWidth = indent.replace(/\t/g, '    ').length;
+        let end = start + 1;
+        while (end < lines.length) {
+          const line = lines[end];
+          if (line.trim() && line.match(/^\s*/)[0].replace(/\t/g, '    ').length <= indentWidth) break;
+          end += 1;
+        }
+
+        const replacementLines = replacement.split('\n').map(line => `${indent}${line}`);
+        const keepBlankSeparator = end < lines.length && lines[end - 1]?.trim() === '';
+        return [
+          ...lines.slice(0, start),
+          ...replacementLines,
+          ...(keepBlankSeparator ? [''] : []),
+          ...lines.slice(end)
+        ].join('\n');
+      }
+
+      const fibonacciFunction = code.match(/^\s*def\s+([A-Za-z_]*?(?:fib|fibonacci)\w*)\s*\(\s*([A-Za-z_]\w*)\s*\):/im);
+      if (fibonacciFunction) {
+        const [, functionName, parameter] = fibonacciFunction;
+        if ((category === 'time' && target === 'O(n)') || (category === 'space' && target === 'O(1)')) {
+          return {
+            applicable: true,
+            code: replaceFunctionDefinition(code, functionName, `def ${functionName}(${parameter}):\n    previous, current = 0, 1\n    for _ in range(${parameter}):\n        previous, current = current, previous + current\n    return previous`)
+          };
+        }
+        if (category === 'time' && target === 'O(2^n)') {
+          return {
+            applicable: true,
+            code: replaceFunctionDefinition(code, functionName, `def ${functionName}(${parameter}):\n    if ${parameter} <= 1:\n        return ${parameter}\n    return ${functionName}(${parameter} - 1) + ${functionName}(${parameter} - 2)`)
+          };
+        }
+        if (category === 'space' && target === 'O(n)') {
+          return {
+            applicable: true,
+            code: replaceFunctionDefinition(code, functionName, `def ${functionName}(${parameter}):\n    memo = {}\n\n    def calculate(index):\n        if index <= 1:\n            return index\n        if index not in memo:\n            memo[index] = calculate(index - 1) + calculate(index - 2)\n        return memo[index]`)
+          };
+        }
+      }
+
+      const aggregateMatch = code.match(/\b(sum|any|all|min|max)\s*\(\s*\[([^\]]*\bfor\b[^\]]*)\]\s*\)/);
+      if (category === 'space' && target === 'O(1)' && aggregateMatch) {
+        const generatorExpression = `${aggregateMatch[1]}(${aggregateMatch[2]})`;
+        return {
+          applicable: true,
+          code: code.replace(aggregateMatch[0], generatorExpression)
+        };
+      }
+
+      if (detected === target) return { code, applicable: false };
+      const reason = signals.nestedLoop
+        ? 'This code contains nested loops, but their purpose is not clear enough to safely rewrite their behavior.'
+        : signals.recursive
+          ? 'This code is recursive, but no safe target-specific rewrite was recognized.'
+          : 'No safe automatic rewrite was recognized for this code and target.';
+      return {
+        applicable: false,
+        code: `# Suggestion unavailable\n# ${reason}\n# Existing code is unchanged.`
+      };
+    }
+
+    async function updateComplexitySuggestion() {
+      const requestId = ++complexityAnalysisSequence;
+      const code = editor.value;
+      const category = complexityFilterType.value;
+      const target = complexityFilterValue.value;
+      const signals = getCodeSignals(code);
+
+      complexitySuggestionTitle.textContent = `${category === 'time' ? 'Time' : 'Space'} target: ${target}`;
+      complexitySuggestionNote.textContent = 'Analyzing the current compiler code...';
+      applyComplexitySuggestionBtn.disabled = true;
+
+      if (!code.trim()) {
+        complexitySuggestionNote.textContent = buildComplexityAdvice(code, category, target, 'None', signals);
+        complexitySuggestionCode.textContent = 'No code in the compiler.';
+        return;
+      }
+
+      try {
+        const response = await fetch('/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code })
+        });
+        const result = await response.json();
+        if (requestId !== complexityAnalysisSequence) return;
+
+        const metricName = category === 'time' ? 'time_complexity' : 'space_complexity';
+        const detected = result.metrics?.[metricName] || 'None';
+        const suggestion = buildComplexityCodeSuggestion(code, category, target, detected, signals);
+        complexitySuggestionCode.textContent = suggestion.code;
+        applyComplexitySuggestionBtn.disabled = !suggestion.applicable;
+        complexitySuggestionNote.textContent = result.status !== 'ok'
+          ? (result.message || 'Could not analyze this code. Check that it is valid Python.')
+          : suggestion.applicable
+            ? `A code-specific ${category} candidate for ${target} is shown below. Apply it to replace the matching function or expression in the editor.`
+            : buildComplexityAdvice(code, category, target, detected, signals);
+      } catch (error) {
+        if (requestId === complexityAnalysisSequence) {
+          complexitySuggestionNote.textContent = 'Analysis service is unavailable. The editor code has not been changed.';
+          complexitySuggestionCode.textContent = 'Could not generate a suggestion while analysis is unavailable.';
+        }
+      }
+    }
+
+    function scheduleComplexityAdvice() {
+      clearTimeout(complexityAdviceTimer);
+      complexityAdviceTimer = setTimeout(updateComplexitySuggestion, 250);
+    }
+
+    if (complexityFilterType && complexityFilterValue) {
+      complexityFilterType.addEventListener('change', updateComplexitySuggestion);
+      complexityFilterValue.addEventListener('change', updateComplexitySuggestion);
+      editor.addEventListener('input', scheduleComplexityAdvice);
+      updateComplexitySuggestion();
+    }
+
+    applyComplexitySuggestionBtn.addEventListener('click', () => {
+      if (applyComplexitySuggestionBtn.disabled) return;
+      editor.value = complexitySuggestionCode.textContent;
+      updateStats();
+      editor.focus();
+      output.textContent = 'Suggested code loaded into the editor. Click Run Code to execute it.';
+      document.getElementById('runtimeValue').textContent = '--';
+      document.getElementById('statusValue').textContent = 'Ready';
+      scheduleComplexityAdvice();
+    });
+
+    let pendingCode = '';
+    let interactiveSessionId = null;
+    let interactiveInputTranscript = '';
+    let interactivePollTimer = null;
+    let interactiveInputBusy = false;
+
+    function renderComplexityAnalysis(complexityText, type = 'time') {
+      const normalized = complexityText && complexityText !== 'None' ? complexityText : 'None';
+      const badgeEl = type === 'time' ? document.getElementById('timeComplexityBadge') : document.getElementById('spaceComplexityBadge');
+      if (badgeEl) badgeEl.textContent = normalized;
+
+      const bars = document.querySelectorAll(type === 'time' ? '.graph-fill' : '.space-fill');
+      const levels = {
+        'None': 10,
+        'O(1)': 20,
+        'O(n)': 48,
+        'O(n²)': 76,
+        'O(n^k)': 90,
+        'O(2^n)': 100
+      };
+
+      bars.forEach((bar) => {
+        const isActive = bar.dataset.complexity === normalized;
+        bar.classList.toggle('active', isActive);
+        const targetHeight = isActive ? levels[normalized] || 50 : 18;
+        bar.style.height = `${targetHeight}%`;
+        bar.style.opacity = isActive ? '1' : '0.3';
+      });
+
+      const reasons = (type === 'time' ? complexityReasonMap : spaceReasonMap)[normalized] || (type === 'time' ? complexityReasonMap['O(1)'] : spaceReasonMap['O(1)']);
+      const reasonsEl = type === 'time' ? document.getElementById('timeComplexityReasons') : document.getElementById('spaceComplexityReasons');
+      if (reasonsEl) {
+        reasonsEl.innerHTML = reasons.map((reason) => `<li>${reason}</li>`).join('');
+      }
+    }
+
+    function getInputPrompts(code) {
+      const inputPattern = /\binput\s*\(\s*(?:(?:[furbFURB]*)(['"])(.*?)\1\s*)?\)/g;
+      const prompts = [];
+      let match;
+
+      while ((match = inputPattern.exec(code)) !== null) {
+        prompts.push(match[2] || 'Program input');
+      }
+
+      return prompts;
+    }
+
+    function showProgramInput(code, prompts) {
+      pendingCode = code;
+      const promptHint = prompts.length === 1 ? prompts[0] : `${prompts.length} input points detected`;
+      programInputFields.innerHTML = `<label for="programInputValues" class="program-input-row">
+        <span>${escapeHtml(promptHint)}</span>
+        <input id="programInputValues" type="text" autocomplete="off" placeholder="Enter a value and press Enter" />
+      </label>`;
+      programInputPanel.classList.add('visible');
+      const input = programInputFields.querySelector('input, textarea');
+      input?.focus();
+      input?.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          submitProgramInput.click();
+        }
+      });
+    }
+
+    async function pollInteractivePython() {
+      if (!interactiveSessionId) return;
+      const response = await fetch(`/run-python-session/${interactiveSessionId}`);
+      const result = await response.json();
+      output.textContent = `${interactiveInputTranscript}${result.output || ''}`;
+      document.getElementById('statusValue').textContent = result.status === 'running'
+        ? 'Waiting for input'
+        : result.status === 'success' ? 'Success' : result.status === 'timeout' ? 'Timeout' : 'Runtime Error';
+
+      if (result.status === 'running') {
+        interactivePollTimer = setTimeout(pollInteractivePython, 200);
+      } else {
+        programInputPanel.classList.remove('visible');
+        interactiveSessionId = null;
+      }
+    }
+
+    async function startInteractivePython(code, prompts) {
+      if (interactivePollTimer) clearTimeout(interactivePollTimer);
+      interactiveSessionId = null;
+      interactiveInputBusy = false;
+      output.textContent = 'Starting Python program...';
+      const response = await fetch('/run-python-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      const result = await response.json();
+      if (result.status !== 'running') {
+        output.textContent = result.output || 'Unable to start program.';
+        document.getElementById('statusValue').textContent = result.status === 'syntax_error' ? 'Syntax Error' : 'Runtime Error';
+        return;
+      }
+
+      interactiveSessionId = result.session_id;
+      interactiveInputTranscript = '';
+      showProgramInput(code, prompts);
+      pollInteractivePython();
+    }
+
+    async function executePython(code, values) {
+      output.textContent = 'Running Python program...';
+      runBtn.disabled = true;
+      runBtn.setAttribute('aria-busy', 'true');
+      runBtn.lastChild.textContent = ' Running...';
+
+      try {
+        const response = await fetch('/run-python', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, stdin: values.join('\n') })
+        });
+        const result = await response.json();
+
+        const inputSummary = values.length
+          ? `Input values:\n${values.map((value, index) => `${index + 1}. ${value}`).join('\n')}\n\n`
+          : '';
+        output.textContent = `${inputSummary}${result.output}`;
+        document.getElementById('runtimeValue').textContent = result.runtime === undefined ? 'Error' : `${result.runtime}s`;
+        document.getElementById('statusValue').textContent = result.status === 'success'
+          ? 'Success'
+          : result.status === 'syntax_error'
+            ? 'Syntax Error'
+            : result.status === 'timeout'
+              ? 'Timeout'
+              : 'Runtime Error';
+
+        renderComplexityAnalysis(result.time_complexity || 'None', 'time');
+        renderComplexityAnalysis(result.space_complexity || 'None', 'space');
+      } catch (error) {
+        output.textContent = `Compiler Error:\n${error.message}`;
+        document.getElementById('runtimeValue').textContent = 'Error';
+        document.getElementById('statusValue').textContent = 'Failed';
+        renderComplexityAnalysis('None', 'time');
+        renderComplexityAnalysis('None', 'space');
+      } finally {
+        runBtn.disabled = false;
+        runBtn.removeAttribute('aria-busy');
+        runBtn.lastChild.textContent = ' Run Code';
+      }
+    }
+
+    submitProgramInput.addEventListener('click', async () => {
+      if (interactiveInputBusy) return;
+      const inputArea = document.getElementById('programInputValues');
+      const values = inputArea ? inputArea.value.split(/\r?\n/).filter(value => value.length > 0) : [];
+
+      if (interactiveSessionId) {
+        const value = values[0] || '';
+        interactiveInputBusy = true;
+        submitProgramInput.disabled = true;
+        const response = await fetch(`/run-python-session/${interactiveSessionId}/input`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value })
+        });
+        if (response.ok) interactiveInputTranscript += `\n> ${value}\n`;
+        inputArea.value = '';
+        interactiveInputBusy = false;
+        submitProgramInput.disabled = false;
+        return;
+      }
+
+      programInputPanel.classList.remove('visible');
+      executePython(pendingCode, values);
+    });
+
+    renderComplexityAnalysis('O(n)', 'time');
+    renderComplexityAnalysis('O(n)', 'space');
+
+    runBtn.addEventListener('click', () => {
+      const code = editor.value.trim();
+      if (!code) {
+        output.textContent = 'No code to run. Please type your Python program first.';
+        document.getElementById('statusValue').textContent = 'Empty';
+        renderComplexityAnalysis('None', 'time');
+        renderComplexityAnalysis('None', 'space');
+        return;
+      }
+
+      const prompts = getInputPrompts(code);
+      if (prompts.length) {
+        startInteractivePython(code, prompts);
+        return;
+      }
+
+      executePython(code, []);
+    });
+  </script>
+</body>
+</html>

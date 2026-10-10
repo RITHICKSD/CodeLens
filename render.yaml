@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: codelens
+    runtime: python
+    plan: free
+    region: oregon
+    branch: main
+    rootDir: python_frontend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 120 app:app
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: DEMO_ACCESS_CODE
+        generateValue: true

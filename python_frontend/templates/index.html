@@ -1,0 +1,1826 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodeLENSE — System Workspace IDE</title>
+  <link rel="stylesheet" href="/static/styles.css?v=20260831b">
+
+  <!-- Google Fonts: Orbitron, Plus Jakarta Sans, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- CodeMirror 5 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+  <style>
+    /* =========================================================
+       LIGHT THEME (DEFAULT STATE)
+       ========================================================= */
+    body {
+      background-color: #f8fafc !important;
+      color: #334155 !important;
+    }
+
+    .system-header {
+      background: #ffffff !important;
+      border-bottom-color: #e2e8f0 !important;
+    }
+
+    .version-badge {
+      background: rgba(2, 132, 199, 0.08) !important;
+      border-color: rgba(2, 132, 199, 0.25) !important;
+      color: #0284c7 !important;
+    }
+
+    .env-badge {
+      background: #f1f5f9 !important;
+      border-color: #e2e8f0 !important;
+      color: #475569 !important;
+    }
+
+    .sys-btn {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #334155 !important;
+    }
+
+    .sys-btn:hover {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+      border-color: #94a3b8 !important;
+    }
+
+    .left-sidebar {
+      background: #f1f5f9 !important;
+      border-right-color: #e2e8f0 !important;
+    }
+
+    .sidebar-title {
+      color: #64748b !important;
+    }
+
+    .file-tree li {
+      color: #475569 !important;
+    }
+
+    .file-tree li:hover {
+      background: #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+
+    .file-tree li.active {
+      background: #ffffff !important;
+      color: #0284c7 !important;
+      border-color: #0284c7 !important;
+    }
+
+    .file-tree li .file-meta {
+      background: #e2e8f0 !important;
+      color: #64748b !important;
+    }
+
+    .symbol-item {
+      color: #475569 !important;
+    }
+
+    .symbol-item:hover {
+      background: #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+
+    .symbol-item .sym-type {
+      color: #0f172a !important;
+      font-weight: 800 !important;
+    }
+
+    .symbol-item .sym-type.func {
+      background: #bae6fd !important;
+      color: #0369a1 !important;
+    }
+
+    .symbol-item .sym-type.class {
+      background: #e9d5ff !important;
+      color: #6b21a8 !important;
+    }
+
+    .symbol-item .sym-type.imp {
+      background: #bbf7d0 !important;
+      color: #15803d !important;
+    }
+
+    .upload-badge-btn {
+      background: rgba(2, 132, 199, 0.1) !important;
+      border-color: rgba(2, 132, 199, 0.3) !important;
+      color: #0284c7 !important;
+    }
+
+    .center-workbench {
+      background: #ffffff !important;
+    }
+
+    .editor-tabs-bar {
+      background: #f1f5f9 !important;
+      border-bottom-color: #e2e8f0 !important;
+    }
+
+    .editor-tab {
+      background: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      color: #0284c7 !important;
+    }
+
+    .editor-toolbar-system {
+      background: #f1f5f9 !important;
+      border-bottom-color: #e2e8f0 !important;
+    }
+
+    .CodeMirror {
+      background: #ffffff !important;
+      color: #0f172a !important;
+    }
+
+    .CodeMirror-gutters {
+      background: #f1f5f9 !important;
+      border-right-color: #e2e8f0 !important;
+    }
+
+    .CodeMirror-linenumber {
+      color: #64748b !important;
+    }
+
+    .editor-status-bar {
+      background: #f1f5f9 !important;
+      border-top-color: #e2e8f0 !important;
+      color: #64748b !important;
+    }
+
+    .bottom-diagnostic-dock {
+      background: #ffffff !important;
+      border-top-color: #e2e8f0 !important;
+    }
+
+    .dock-header-tabs {
+      background: #f1f5f9 !important;
+      border-bottom-color: #e2e8f0 !important;
+    }
+
+    .dock-tab {
+      color: #64748b !important;
+    }
+
+    .dock-tab:hover {
+      color: #0f172a !important;
+      background: #e2e8f0 !important;
+    }
+
+    .dock-tab.active {
+      background: #ffffff !important;
+      color: #0284c7 !important;
+      border-color: #0284c7 !important;
+    }
+
+    .problems-table th {
+      color: #64748b !important;
+      border-bottom-color: #e2e8f0 !important;
+    }
+
+    .problems-table td {
+      background: #ffffff !important;
+      border-top-color: #f1f5f9 !important;
+      color: #334155 !important;
+    }
+
+    .problems-table tr:hover td {
+      background: #f1f5f9 !important;
+    }
+
+    .btn-jump-line {
+      background: #bae6fd !important;
+      border: 1px solid #38bdf8 !important;
+      color: #0369a1 !important;
+      font-weight: 800 !important;
+    }
+
+    .btn-jump-line:hover {
+      background: #0284c7 !important;
+      color: #ffffff !important;
+    }
+
+    .ast-tree-view {
+      background: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+      color: #0284c7 !important;
+      font-family: 'JetBrains Mono', monospace !important;
+      line-height: 1.5 !important;
+      overflow: auto !important;
+      min-height: 170px !important;
+    }
+
+    .ast-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .ast-full-btn {
+      border: 1px solid rgba(2, 132, 199, 0.28);
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(124, 58, 237, 0.10));
+      color: #0f172a;
+      border-radius: 9px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .ast-full-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(2, 132, 199, 0.12);
+    }
+
+    .ast-tree-root {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 220px;
+      padding: 8px 4px;
+    }
+
+    .ast-node {
+      position: relative;
+      margin-left: 12px;
+      padding-left: 16px;
+    }
+
+    .ast-node::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 12px;
+      bottom: -10px;
+      width: 1px;
+      background: linear-gradient(180deg, rgba(2, 132, 199, 0.8), rgba(2, 132, 199, 0.15));
+      animation: astBranchPulse 2s ease-in-out infinite alternate;
+    }
+
+    .ast-node:last-child::before {
+      bottom: 14px;
+    }
+
+    .ast-node-header {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.14), rgba(124, 58, 237, 0.10));
+      border: 1px solid rgba(2, 132, 199, 0.25);
+      color: #0f172a;
+      font-weight: 700;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.3) inset;
+      animation: astNodeBloom 0.45s ease-out;
+    }
+
+    .ast-node-header .ast-label {
+      color: #0369a1;
+    }
+
+    .ast-node-header .ast-meta {
+      color: #475569;
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .ast-node-children {
+      position: relative;
+      margin-top: 6px;
+      margin-left: 18px;
+      padding-left: 12px;
+      border-left: 1px solid rgba(2, 132, 199, 0.35);
+    }
+
+    .ast-node-children::before {
+      content: '';
+      position: absolute;
+      left: -1px;
+      top: 10px;
+      width: 12px;
+      height: 1px;
+      background: rgba(2, 132, 199, 0.45);
+      animation: astBranchPulse 2s ease-in-out infinite alternate;
+    }
+
+    body.dark-theme .ast-node-header {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.18), rgba(168, 85, 247, 0.12));
+      border-color: rgba(14, 165, 233, 0.35);
+      color: #e2e8f0;
+    }
+
+    body.dark-theme .ast-node-header .ast-label {
+      color: #a5f3fc;
+    }
+
+    body.dark-theme .ast-node-header .ast-meta {
+      color: #94a3b8;
+    }
+
+    body.dark-theme .ast-node-children {
+      border-left-color: rgba(34, 211, 238, 0.35);
+    }
+
+    body.dark-theme .ast-full-btn {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.18), rgba(168, 85, 247, 0.12));
+      color: #e2e8f0;
+      border-color: rgba(14, 165, 233, 0.35);
+    }
+
+    .ast-modal-card {
+      width: min(1100px, 90vw);
+      max-height: 85vh;
+      background: #f8fafc;
+      border: 1px solid rgba(2, 132, 199, 0.2);
+      border-radius: 18px;
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.22);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .ast-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(124, 58, 237, 0.10));
+      border-bottom: 1px solid rgba(148, 163, 184, 0.24);
+    }
+
+    .ast-modal-body {
+      padding: 16px;
+      overflow: auto;
+      background: #ffffff;
+    }
+
+    .ast-full-tree {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #0f172a;
+    }
+
+    .ast-full-tree .ast-node {
+      margin-left: 8px;
+    }
+
+    .ast-full-tree .ast-node-header {
+      display: inline-flex;
+      max-width: 100%;
+    }
+
+    .ast-modal-close {
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      background: rgba(15, 23, 42, 0.04);
+      color: #0f172a;
+      border-radius: 8px;
+      padding: 7px 12px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    body.dark-theme .ast-modal-card {
+      background: #09111d;
+      border-color: rgba(14, 165, 233, 0.28);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    body.dark-theme .ast-modal-body {
+      background: rgba(15, 23, 42, 0.96);
+    }
+
+    body.dark-theme .ast-full-tree {
+      color: #e2e8f0;
+    }
+
+    body.dark-theme .ast-modal-close {
+      background: rgba(148, 163, 184, 0.09);
+      border-color: rgba(148, 163, 184, 0.22);
+      color: #e2e8f0;
+    }
+
+    @keyframes astNodeBloom {
+      from { transform: translateY(6px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes astBranchPulse {
+      from { opacity: 0.25; }
+      to { opacity: 1; }
+    }
+
+    .sys-metric-card {
+      background: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+    }
+
+    .sys-metric-card .title {
+      color: #64748b !important;
+    }
+
+    .sys-metric-card .val {
+      color: #0284c7 !important;
+    }
+
+    .audit-log-console {
+      background: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+      color: #334155 !important;
+    }
+
+    .log-entry .time {
+      color: #64748b !important;
+    }
+
+    .log-entry .tag {
+      color: #0284c7 !important;
+    }
+
+    /* Top Stats Bar Cards (4 Grid) */
+    .top-stats-banner {
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 12px !important;
+      padding: 10px 16px !important;
+      background: #f8fafc !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+    }
+
+    .stat-card {
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: var(--radius-sm) !important;
+      padding: 8px 12px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+      transition: transform 0.2s ease, border-color 0.2s ease !important;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px) !important;
+      border-color: #0284c7 !important;
+    }
+
+    .stat-icon-box {
+      width: 36px !important;
+      height: 36px !important;
+      border-radius: 8px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      flex-shrink: 0 !important;
+    }
+
+    .stat-icon-box.cyan {
+      background: #e0f2fe !important;
+      color: #0284c7 !important;
+    }
+
+    .stat-icon-box.emerald {
+      background: #dcfce7 !important;
+      color: #15803d !important;
+    }
+
+    .stat-icon-box.purple {
+      background: #f3e8ff !important;
+      color: #7c3aed !important;
+    }
+
+    .stat-icon-box.amber {
+      background: #fef3c7 !important;
+      color: #b45309 !important;
+    }
+
+    .stat-details {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 2px !important;
+      flex: 1 !important;
+    }
+
+    .stat-title {
+      font-size: 10.5px !important;
+      font-weight: 600 !important;
+      color: #64748b !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.5px !important;
+    }
+
+    .stat-value {
+      font-family: 'Orbitron', sans-serif !important;
+      font-size: 14px !important;
+      font-weight: 700 !important;
+      color: #0f172a !important;
+    }
+
+    .stat-badge {
+      font-size: 9.5px !important;
+      font-weight: 700 !important;
+      padding: 1px 6px !important;
+      border-radius: 4px !important;
+      width: fit-content !important;
+    }
+
+    .stat-badge.success {
+      background: #dcfce7 !important;
+      color: #15803d !important;
+    }
+
+    .stat-badge.info {
+      background: #e0f2fe !important;
+      color: #0284c7 !important;
+    }
+
+    .stat-badge.warning {
+      background: #fef3c7 !important;
+      color: #b45309 !important;
+    }
+
+    /* System Overview Section (Scrollable Bottom Analytics) */
+    .system-overview-section {
+      background: #f8fafc !important;
+      border-top: 1px solid #e2e8f0 !important;
+      padding: 20px 24px 30px !important;
+      flex-shrink: 0 !important;
+    }
+    .system-overview-header {
+      margin-bottom: 14px !important;
+    }
+    .overview-title {
+      font-family: 'Orbitron', sans-serif !important;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      color: #0f172a !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+    }
+
+    /* =========================================================
+       DARK THEME OVERRIDES (WHEN body.dark-theme IS ACTIVE)
+       ========================================================= */
+    body.dark-theme {
+      background-color: #050811 !important;
+      color: #e2e8f0 !important;
+    }
+
+    body.dark-theme .top-stats-banner {
+      background: #060912 !important;
+      border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    body.dark-theme .stat-card {
+      background: #0b0f1b !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+      box-shadow: none !important;
+    }
+
+    body.dark-theme .stat-card:hover {
+      border-color: rgba(0, 242, 254, 0.4) !important;
+    }
+
+    body.dark-theme .stat-icon-box.cyan {
+      background: rgba(0, 242, 254, 0.15) !important;
+      color: #00f2fe !important;
+    }
+
+    body.dark-theme .stat-icon-box.emerald {
+      background: rgba(16, 185, 129, 0.15) !important;
+      color: #10b981 !important;
+    }
+
+    body.dark-theme .stat-icon-box.purple {
+      background: rgba(139, 92, 246, 0.15) !important;
+      color: #8b5cf6 !important;
+    }
+
+    body.dark-theme .stat-icon-box.amber {
+      background: rgba(245, 158, 11, 0.15) !important;
+      color: #f59e0b !important;
+    }
+
+    body.dark-theme .stat-title {
+      color: #64748b !important;
+    }
+
+    body.dark-theme .stat-value {
+      color: #f8fafc !important;
+    }
+
+    body.dark-theme .stat-badge.success {
+      background: rgba(16, 185, 129, 0.2) !important;
+      color: #10b981 !important;
+    }
+
+    body.dark-theme .stat-badge.info {
+      background: rgba(0, 242, 254, 0.2) !important;
+      color: #00f2fe !important;
+    }
+
+    body.dark-theme .stat-badge.warning {
+      background: rgba(245, 158, 11, 0.2) !important;
+      color: #f59e0b !important;
+    }
+    body.dark-theme .system-overview-section {
+      background: #060912 !important;
+      border-top-color: rgba(255,255,255,0.08) !important;
+    }
+    body.dark-theme .overview-title {
+      color: #f8fafc !important;
+    }
+
+    body.dark-theme .system-header {
+      background: #060a14 !important;
+      border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    body.dark-theme .version-badge {
+      background: rgba(0, 242, 254, 0.12) !important;
+      border-color: rgba(0, 242, 254, 0.3) !important;
+      color: #00f2fe !important;
+    }
+
+    body.dark-theme .env-badge {
+      background: rgba(255, 255, 255, 0.03) !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+      color: #94a3b8 !important;
+    }
+
+    body.dark-theme .sys-btn {
+      background: rgba(255, 255, 255, 0.04) !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+      color: #94a3b8 !important;
+    }
+
+    body.dark-theme .sys-btn:hover {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: #f8fafc !important;
+      border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    body.dark-theme .left-sidebar {
+      background: #080c16 !important;
+      border-right-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    body.dark-theme .sidebar-title {
+      color: #64748b !important;
+    }
+
+    body.dark-theme .file-tree li {
+      color: #94a3b8 !important;
+    }
+
+    body.dark-theme .file-tree li:hover {
+      background: rgba(255, 255, 255, 0.06) !important;
+      color: #f8fafc !important;
+    }
+
+    body.dark-theme .file-tree li.active {
+      background: rgba(0, 242, 254, 0.1) !important;
+      color: #00f2fe !important;
+      border-color: rgba(0, 242, 254, 0.3) !important;
+    }
+
+    body.dark-theme .file-tree li .file-meta {
+      background: rgba(255, 255, 255, 0.04) !important;
+      color: #64748b !important;
+    }
+
+    body.dark-theme .symbol-item {
+      color: #94a3b8 !important;
+    }
+
+    body.dark-theme .symbol-item:hover {
+      background: rgba(255, 255, 255, 0.05) !important;
+      color: #f8fafc !important;
+    }
+
+    body.dark-theme .symbol-item .sym-type.func {
+      background: rgba(0, 242, 254, 0.15) !important;
+      color: #00f2fe !important;
+    }
+
+    body.dark-theme .symbol-item .sym-type.class {
+      background: rgba(139, 92, 246, 0.15) !important;
+      color: #8b5cf6 !important;
+    }
+
+    body.dark-theme .symbol-item .sym-type.imp {
+      background: rgba(16, 185, 129, 0.15) !important;
+      color: #10b981 !important;
+    }
+
+    body.dark-theme .upload-badge-btn {
+      background: rgba(0, 242, 254, 0.1) !important;
+      border-color: rgba(0, 242, 254, 0.3) !important;
+      color: #00f2fe !important;
+    }
+
+    body.dark-theme .center-workbench {
+      background: #070b16 !important;
+    }
+
+    body.dark-theme .editor-tabs-bar {
+      background: #060912 !important;
+      border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    body.dark-theme .editor-tab {
+      background: #0b0f1b !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+      color: #00f2fe !important;
+    }
+
+    body.dark-theme .editor-toolbar-system {
+      background: #090d18 !important;
+      border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    body.dark-theme .CodeMirror {
+      background: #282a36 !important;
+      color: #f8f8f2 !important;
+    }
+
+    body.dark-theme .CodeMirror-gutters {
+      background: #21222c !important;
+      border-right: 1px solid #44475a !important;
+    }
+
+    body.dark-theme .CodeMirror-linenumber {
+      color: #6272a4 !important;
+    }
+
+    body.dark-theme .cm-s-default span.cm-keyword {
+      color: #ff79c6 !important;
+    }
+
+    body.dark-theme .cm-s-default span.cm-string {
+      color: #f1fa8c !important;
+    }
+
+    body.dark-theme .cm-s-default span.cm-comment {
+      color: #6272a4 !important;
+      font-style: italic;
+    }
+
+    body.dark-theme .cm-s-default span.cm-number {
+      color: #bd93f9 !important;
+    }
+
+    body.dark-theme .cm-s-default span.cm-def {
+      color: #50fa7b !important;
+    }
+
+    body.dark-theme .cm-s-default span.cm-variable {
+      color: #f8f8f2 !important;
+    }
+
+    body.dark-theme .cm-s-default span.cm-builtin {
+      color: #ffb86c !important;
+    }
+
+    body.dark-theme .cm-s-default span.cm-property {
+      color: #8be9fd !important;
+    }
+
+    body.dark-theme .editor-status-bar {
+      background: #05070f !important;
+      border-top-color: rgba(255, 255, 255, 0.08) !important;
+      color: #64748b !important;
+    }
+
+    body.dark-theme .bottom-diagnostic-dock {
+      background: #070a14 !important;
+      border-top-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    body.dark-theme .dock-header-tabs {
+      background: #05070e !important;
+      border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    body.dark-theme .dock-tab {
+      color: #64748b !important;
+    }
+
+    body.dark-theme .dock-tab:hover {
+      color: #f8fafc !important;
+      background: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    body.dark-theme .dock-tab.active {
+      background: rgba(0, 242, 254, 0.1) !important;
+      color: #00f2fe !important;
+      border-color: rgba(0, 242, 254, 0.35) !important;
+    }
+
+    body.dark-theme .problems-table th {
+      color: #64748b !important;
+      border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    body.dark-theme .problems-table td {
+      background: rgba(255, 255, 255, 0.015) !important;
+      border-top-color: rgba(255, 255, 255, 0.04) !important;
+      color: #e2e8f0 !important;
+    }
+
+    body.dark-theme .problems-table tr:hover td {
+      background: rgba(0, 242, 254, 0.05) !important;
+    }
+
+    body.dark-theme .btn-jump-line {
+      background: rgba(0, 242, 254, 0.12) !important;
+      border: 1px solid rgba(0, 242, 254, 0.35) !important;
+      color: #00f2fe !important;
+      font-weight: 700 !important;
+    }
+
+    body.dark-theme .btn-jump-line:hover {
+      background: #00f2fe !important;
+      color: #040914 !important;
+    }
+
+    body.dark-theme .ast-tree-view {
+      background: #04060d !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+      color: #a5f3fc !important;
+    }
+
+    body.dark-theme .sys-metric-card {
+      background: rgba(255, 255, 255, 0.02) !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    body.dark-theme .sys-metric-card .title {
+      color: #64748b !important;
+    }
+
+    body.dark-theme .sys-metric-card .val {
+      color: #00f2fe !important;
+    }
+
+    body.dark-theme .audit-log-console {
+      background: #04060c !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+      color: #94a3b8 !important;
+    }
+
+    body.dark-theme .log-entry .time {
+      color: #64748b !important;
+    }
+
+    body.dark-theme .log-entry .tag {
+      color: #00f2fe !important;
+    }
+
+    body.dark-theme .modal-card {
+      background: #0b0f19 !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    body.dark-theme .modal-title {
+      color: #f8fafc !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Loading Modal -->
+  <div id="loadingOverlay" class="analysis-overlay">
+    <div class="spinner-ring"></div>
+    <div class="loading-text">EXECUTING SYSTEM REVIEW & AST PARSER...</div>
+  </div>
+
+  <!-- Language Validation Alert Modal -->
+  <div id="languageAlertModal" class="analysis-overlay" style="display:none">
+    <div class="modal-card">
+      <div class="modal-icon">
+        <svg class="icon-svg-lg" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+      </div>
+      <div class="modal-title">Unsupported Language</div>
+      <div class="modal-body" id="langAlertMsg">Please Enter Python Code</div>
+      <button class="modal-btn" onclick="closeLangModal()">OK</button>
+    </div>
+  </div>
+
+  <div class="system-layout">
+
+    <!-- System Header Bar -->
+    <header class="system-header">
+      <div class="header-left">
+        <a href="/" class="brand-logo-group">
+          <img src="/static/logo_light.png" alt="CodeLENSE" class="brand-logo-img" />
+        </a>
+        <a href="/compiler" class="sys-btn" style="padding: 8px 14px; margin-left: 10px; display: inline-flex; align-items: center; gap: 8px; font-weight: 700; text-decoration: none;">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 9l-5 3 5 3" />
+            <path d="M16 9l5 3-5 3" />
+            <path d="M14 3l-4 18" />
+          </svg>
+          Go To Compiler
+        </a>
+        <span class="version-badge">v2.4 SYSTEM WORKSPACE</span>
+      </div>
+
+      <div class="header-right">
+        <button id="themeToggleBtn" class="sys-btn" title="Toggle Light/Dark Theme"
+          style="padding: 6px 10px; display: inline-flex; align-items: center; justify-content: center;">
+          <svg id="themeIconSun" class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="5" />
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+          </svg>
+          <svg id="themeIconMoon" class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            style="display:none">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+        </button>
+        <div class="env-badge">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="#38bdf8">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+          </svg> Python 3.11.4 (.venv)
+        </div>
+        <div class="system-status-indicator">
+          <span class="pulse-dot"></span> Engine Online
+        </div>
+      </div>
+    </header>
+
+    <!-- Main IDE Workspace Grid -->
+    <main class="main-workspace">
+
+      <!-- Left Sidebar: File Explorer & Symbol Outline -->
+      <aside class="left-sidebar">
+
+        <!-- System File Explorer Section -->
+        <div class="sidebar-section">
+          <div class="sidebar-title">
+            <span>System Files</span>
+            <button id="sidebarUploadBtn" class="upload-badge-btn" title="Upload Local Code File"><svg
+                class="icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg> Upload</button>
+          </div>
+
+          <ul class="file-tree" id="fileTree">
+            <li class="active" data-file="main.py">
+              <span><svg class="icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="#38bdf8">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg> main.py</span>
+              <span class="file-meta">Active</span>
+            </li>
+            <li data-file="auth_vulnerable.py">
+              <span><svg class="icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="#ef4444">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg> auth_vulnerable.py</span>
+              <span class="file-meta">Security</span>
+            </li>
+            <li data-file="eval_danger.py">
+              <span><svg class="icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="#f59e0b">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg> eval_danger.py</span>
+              <span class="file-meta">Critical</span>
+            </li>
+            <li data-file="database.py">
+              <span><svg class="icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="#38bdf8">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg> database.py</span>
+              <span class="file-meta">DB Scan</span>
+            </li>
+            <li data-file="utils.py">
+              <span><svg class="icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="#10b981">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg> utils.py</span>
+              <span class="file-meta">Style</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Symbol Outline Section -->
+        <div class="sidebar-section" style="flex:1; overflow:hidden; display:flex; flex-direction:column;">
+          <div class="sidebar-title">
+            <span>Code Outline</span>
+            <span id="symbolCount" style="font-size:10px; color:var(--text-dim)">0 Symbols</span>
+          </div>
+
+          <div class="symbol-tree-container" id="symbolTree">
+            <div style="font-size:11px; color:var(--text-dim); padding:8px;">Run system review to populate code symbol
+              tree.</div>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- Center Workbench (Editor Panel) -->
+      <section class="center-workbench">
+        <!-- Animated Laser Scan Beam -->
+        <div id="scanBeam" class="scan-beam"></div>
+
+        <!-- Hidden File Input for Code Upload -->
+        <input type="file" id="fileInputHidden" accept=".py,.txt,.json,.pyw" style="display:none" />
+
+        <!-- Editor Open File Tab Bar -->
+        <div class="editor-tabs-bar">
+          <div class="editor-tab">
+            <span id="currentTabLabel"><svg class="icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="#38bdf8">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg> main.py</span>
+          </div>
+        </div>
+
+        <!-- System Action Toolbar -->
+        <div class="editor-toolbar-system">
+          <div class="action-btn-group">
+            <button id="runReviewBtn" class="sys-btn btn-run">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg> Run System Review
+            </button>
+            <button id="uploadCodeBtn" class="sys-btn" title="Upload Local Code File">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg> Upload File
+            </button>
+            <button id="quickAuditBtn" class="sys-btn">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <polyline points="9 12 11 14 15 10" />
+              </svg> Security Audit
+            </button>
+          </div>
+
+          <div class="action-btn-group">
+            <button id="copyCodeBtn" class="sys-btn" title="Copy Code">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg> Copy
+            </button>
+            <button id="saveCodeBtn" class="sys-btn" title="Save File">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+              </svg> Save
+            </button>
+            <button id="exportReportBtn" class="sys-btn" title="Export JSON Report">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg> Export JSON
+            </button>
+          </div>
+        </div>
+
+        <!-- CodeMirror Container -->
+        <div class="CodeMirror-container-system" id="editorContainer">
+          <textarea id="code" name="code"></textarea>
+        </div>
+
+        <!-- Bottom Editor Status Bar -->
+        <footer class="editor-status-bar">
+          <div class="status-group">
+            <div class="status-item">Ln <span id="statLine">1</span>, Col <span id="statCol">1</span></div>
+            <div class="status-item">Spaces: <span>4</span></div>
+            <div class="status-item">UTF-8</div>
+          </div>
+
+          <div class="status-group">
+            <div class="status-item">Linter: <span id="statLinter" style="color:var(--emerald)">Active</span></div>
+            <div class="status-item">Chars: <span id="statChars">0</span></div>
+          </div>
+        </footer>
+
+      </section>
+
+    </main>
+
+    <!-- Bottom Diagnostic Dock (Tabbed Panel) -->
+    <section class="bottom-diagnostic-dock">
+
+      <!-- Dock Header Tabs -->
+      <div class="dock-header-tabs">
+        <button class="dock-tab active" id="dockTabProblems" onclick="switchDockTab('problems')">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+          <span>Problems</span>
+          <span class="dock-tab-badge" id="problemsBadge">0</span>
+        </button>
+        <button class="dock-tab" id="dockTabAst" onclick="switchDockTab('ast')">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <line x1="6" y1="3" x2="6" y2="15" />
+            <circle cx="18" cy="6" r="3" />
+            <circle cx="6" cy="18" r="3" />
+            <path d="M18 9a9 9 0 0 1-9 9" />
+          </svg>
+          <span>AST Inspector</span>
+        </button>
+        <button class="dock-tab" id="dockTabMetrics" onclick="switchDockTab('metrics')">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <line x1="18" y1="20" x2="18" y2="10" />
+            <line x1="12" y1="20" x2="12" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="14" />
+          </svg>
+          <span>Metrics & Complexity</span>
+        </button>
+        <button class="dock-tab" id="dockTabAudit" onclick="switchDockTab('audit')">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline points="4 17 10 11 4 5" />
+            <line x1="12" y1="19" x2="20" y2="19" />
+          </svg>
+          <span>System Audit Log</span>
+        </button>
+      </div>
+
+      <!-- Dock Content Body -->
+      <div class="dock-body">
+
+        <!-- Tab 1: Problems Table -->
+        <div class="dock-panel active" id="panelProblems">
+          <table class="problems-table">
+            <thead>
+              <tr>
+                <th style="width:70px">Line</th>
+                <th style="width:100px">Severity</th>
+                <th style="width:110px">Rule ID</th>
+                <th style="width:140px">Category</th>
+                <th>Description</th>
+                <th style="width:80px; text-align:center">Action</th>
+              </tr>
+            </thead>
+            <tbody id="problemsTbody">
+              <tr>
+                <td colspan="6" style="text-align:center; color:var(--text-dim); padding:20px;">
+                  No diagnostics generated yet. Click "⚡ Run System Review" to execute analysis engine.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Tab 2: AST Inspector -->
+        <div class="dock-panel" id="panelAst">
+          <div class="ast-toolbar">
+            <div style="color: var(--text-dim); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">AST Inspector</div>
+            <button class="ast-full-btn" id="openAstFullBtn" type="button">View full AST</button>
+          </div>
+          <div class="ast-tree-view" id="astTreeView">
+            // Python Abstract Syntax Tree (AST) output will be generated here upon system review.
+          </div>
+        </div>
+
+        <!-- Tab 3: System Metrics -->
+        <div class="dock-panel" id="panelMetrics">
+          <div class="metrics-panel-grid">
+            <div class="sys-metric-card">
+              <div class="title">Health Score</div>
+              <div id="metHealth" class="val" style="color:var(--emerald)">--</div>
+            </div>
+            <div class="sys-metric-card">
+              <div class="title">Maintainability Index</div>
+              <div id="metMaintain" class="val">--</div>
+            </div>
+            <div class="sys-metric-card">
+              <div class="title">Cyclomatic Complexity</div>
+              <div id="metComplexity" class="val">--</div>
+            </div>
+            <div class="sys-metric-card">
+              <div class="title">Non-Empty Lines</div>
+              <div id="metLines" class="val">--</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: Audit Log Console -->
+        <div class="dock-panel" id="panelAudit">
+          <div class="audit-log-console" id="auditLogConsole">
+            <div class="log-entry"><span class="time">[09:35:00]</span> <span class="tag">SYSTEM</span> Workspace
+              initialized successfully. Engine v2.4 online.</div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- System Overview Analytics Section (4 Cards - Scrollable Bottom Section) -->
+    <section class="system-overview-section">
+      <div class="system-overview-header">
+        <span class="overview-title"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Live System Performance Analytics</span>
+      </div>
+      <div class="top-stats-banner" style="border-bottom:none; padding:0;">
+        <div class="stat-card">
+          <div class="stat-icon-box cyan">
+            <svg class="icon-svg-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <div class="stat-details">
+            <span class="stat-title">Total Lines Written</span>
+            <span class="stat-value" id="cardLinesVal">14 Lines</span>
+            <span class="stat-badge info">Written</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-box emerald">
+            <svg class="icon-svg-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/></svg>
+          </div>
+          <div class="stat-details">
+            <span class="stat-title">Total Functions</span>
+            <span class="stat-value" id="cardFunctionsVal">2 Functions</span>
+            <span class="stat-badge success">Extracted</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-box purple">
+            <svg class="icon-svg-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="stat-details">
+            <span class="stat-title">Time Complexity</span>
+            <span class="stat-value" id="cardComplexityVal">O(n)</span>
+            <span class="stat-badge info">Estimated</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-box amber">
+            <svg class="icon-svg-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="stat-details">
+            <span class="stat-title">Output Sure</span>
+            <span class="stat-value" id="cardOutputSureVal">Yes</span>
+            <span class="stat-badge success" id="cardOutputBadge">Verified</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div id="astFullModal" class="analysis-overlay" style="display:none;">
+    <div class="ast-modal-card">
+      <div class="ast-modal-header">
+        <div class="modal-title" style="margin:0;">Full AST Tree</div>
+        <button class="ast-modal-close" id="closeAstFullBtn" type="button">Close</button>
+      </div>
+      <div class="ast-modal-body">
+        <div class="ast-full-tree" id="astFullTree"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- System JavaScript -->
+  <script>
+    // Virtual System Workspace Files Database
+    const FILES_DB = {
+      'main.py': `# System File: main.py
+def calculate_fibonacci(n):
+    """Generate n-th Fibonacci number."""
+    if n <= 0:
+        return 0
+    elif n == 1:
+        return 1
+    
+    a, b = 0, 1
+    for _ in range(2, n + 1):
+        a, b = b, a + b
+    return b
+
+def main():
+    result = calculate_fibonacci(10)
+    print(f"Fibonacci Result: {result}")
+
+if __name__ == "__main__":
+    main()`,
+
+      'auth_vulnerable.py': `# System File: auth_vulnerable.py
+import sqlite3
+
+def authenticate_user(username, password):
+    conn = sqlite3.connect("system_app.db")
+    cursor = conn.cursor()
+    
+    # CRITICAL: Vulnerable SQL string formatting
+    query = "SELECT * FROM users WHERE username = '%s' AND password = '%s'" % (username, password)
+    cursor.execute(query)
+    
+    user = cursor.fetchone()
+    conn.close()
+    return user`,
+
+      'eval_danger.py': `# System File: eval_danger.py
+def execute_dynamic_calculation(expression, input_val):
+    # CRITICAL: Unsafe dynamic eval execution
+    scope = {"x": input_val}
+    result = eval(expression, scope)
+    return result
+
+output = execute_dynamic_calculation("x * 10 + 5", 4)
+print("Dynamic Output:", output)`,
+
+      'database.py': `# System File: database.py
+import sqlite3
+
+def safe_get_user(user_id):
+    conn = sqlite3.connect("production.db")
+    cursor = conn.cursor()
+    # Safe parameterized query
+    cursor.execute("SELECT id, username, email FROM users WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+    conn.close()
+    return user`,
+
+      'utils.py': `# System File: utils.py
+def process_items(items_list):
+    processed = []
+    # Warning: Non-pythonic range(len(...))
+    for i in range(len(items_list)):
+        try:
+            val = items_list[i] * 2
+            processed.append(val)
+        except:
+            # Warning: Bare except catch-all
+            pass
+    return processed`
+    };
+
+    // Active File State
+    let activeFile = 'main.py';
+
+    // Initialize CodeMirror 5
+    const textarea = document.getElementById('code');
+    textarea.value = FILES_DB[activeFile];
+
+    const editor = CodeMirror.fromTextArea(textarea, {
+      lineNumbers: true,
+      mode: 'python',
+      theme: 'dracula',
+      indentUnit: 4,
+      lineWrapping: true,
+      autofocus: true
+    });
+
+    // Update Cursor Line:Col Indicators
+    editor.on('cursorActivity', () => {
+      const pos = editor.getCursor();
+      document.getElementById('statLine').textContent = pos.line + 1;
+      document.getElementById('statCol').textContent = pos.ch + 1;
+    });
+
+    let liveReviewTimer;
+    function updateEditorStats() {
+      const val = editor.getValue();
+      document.getElementById('statChars').textContent = val.length;
+
+      // Live Instant Review Update for Stats Cards on Code Edits
+      clearTimeout(liveReviewTimer);
+      liveReviewTimer = setTimeout(() => {
+        runSystemReview();
+      }, 350);
+    }
+    editor.on('change', updateEditorStats);
+    updateEditorStats();
+
+    // File Switcher Handler
+    const fileTreeItems = document.querySelectorAll('#fileTree li');
+    fileTreeItems.forEach(item => {
+      item.addEventListener('click', () => {
+        fileTreeItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+
+        const fileName = item.getAttribute('data-file');
+        if (FILES_DB[fileName] !== undefined) {
+          activeFile = fileName;
+          document.getElementById('currentTabLabel').innerHTML = `<svg class="icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="#38bdf8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> ${fileName}`;
+          editor.setValue(FILES_DB[fileName]);
+          logAudit(`Opened file '${fileName}' in system editor.`);
+          // Automatically run quick review
+          runSystemReview();
+        }
+      });
+    });
+
+    // Switch Dock Tabs
+    window.switchDockTab = function (tabKey) {
+      const tabs = ['problems', 'ast', 'metrics', 'audit'];
+      tabs.forEach(t => {
+        const tabBtn = document.getElementById(`dockTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const panel = document.getElementById(`panel${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (tabBtn && panel) {
+          tabBtn.classList.remove('active');
+          panel.classList.remove('active');
+        }
+      });
+
+      const activeBtn = document.getElementById(`dockTab${tabKey.charAt(0).toUpperCase() + tabKey.slice(1)}`);
+      const activePanel = document.getElementById(`panel${tabKey.charAt(0).toUpperCase() + tabKey.slice(1)}`);
+      if (activeBtn && activePanel) {
+        activeBtn.classList.add('active');
+        activePanel.classList.add('active');
+      }
+    };
+
+    // Jump to exact line in CodeMirror when user clicks problem row
+    window.jumpToLine = function (lineNum) {
+      const line = Math.max(0, lineNum - 1);
+      editor.setCursor({ line: line, ch: 0 });
+      editor.focus();
+
+      // Highlight line briefly
+      const lineHandle = editor.addLineClass(line, 'background', 'highlight-line');
+      setTimeout(() => {
+        editor.removeLineClass(lineHandle, 'background', 'highlight-line');
+      }, 2000);
+    };
+
+    function isJavaCode(code) {
+      const javaSignatures = [
+        'public class ', 'public static void main', 'System.out.println',
+        'System.out.print', 'import java.', 'private int ', 'public int ',
+        'private String ', 'public String ', 'String[] args', 'extends ', 'implements '
+      ];
+      return javaSignatures.some(sig => code.includes(sig));
+    }
+
+    window.showLangModal = function (msg) {
+      const modal = document.getElementById('languageAlertModal');
+      const msgEl = document.getElementById('langAlertMsg');
+      if (msgEl) msgEl.textContent = msg || 'Please Enter Python Code';
+      if (modal) modal.style.display = 'flex';
+    };
+
+    window.closeLangModal = function () {
+      const modal = document.getElementById('languageAlertModal');
+      if (modal) modal.style.display = 'none';
+    };
+
+    // Log Audit Entry Helper
+    function logAudit(msg) {
+      const consoleEl = document.getElementById('auditLogConsole');
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `<span class="time">[${timeStr}]</span> <span class="tag">SYSTEM</span> ${msg}`;
+      consoleEl.prepend(entry);
+    }
+
+    // Run System Review Handler
+    async function runSystemReview() {
+      const code = editor.getValue();
+
+      // Validate Language: Block Java code with custom message box
+      if (isJavaCode(code)) {
+        showLangModal('Please Enter Python Code');
+        logAudit(`WARNING: Non-Python Java code detected in '${activeFile}'. Analysis aborted.`);
+        return;
+      }
+
+      const scanBeam = document.getElementById('scanBeam');
+      if (scanBeam) scanBeam.style.display = 'block';
+
+      try {
+        const response = await fetch('/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code })
+        });
+
+        const data = await response.json();
+        if (scanBeam) scanBeam.style.display = 'none';
+
+        if (data.status === 'invalid_language') {
+          showLangModal(data.message || 'Please Enter Python Code');
+          logAudit(`WARNING: Backend engine rejected code - ${data.message}`);
+          return;
+        }
+
+        updateSystemDiagnostics(data);
+        logAudit(`Completed system review on '${activeFile}'. Health Score: ${data.metrics.health_score}%.`);
+
+      } catch (err) {
+        if (scanBeam) scanBeam.style.display = 'none';
+        logAudit(`ERROR: Failed to contact backend engine.`);
+      }
+    }
+
+    document.getElementById('runReviewBtn').addEventListener('click', runSystemReview);
+    document.getElementById('quickAuditBtn').addEventListener('click', runSystemReview);
+
+    function renderAstTree(node, targetElement, compact = true) {
+      const container = targetElement || document.getElementById('astTreeView');
+      if (!container || !node) return;
+
+      const buildNode = (currentNode) => {
+        if (!currentNode || typeof currentNode !== 'object') {
+          return document.createElement('div');
+        }
+
+        const nodeWrap = document.createElement('div');
+        nodeWrap.className = 'ast-node';
+
+        const header = document.createElement('div');
+        header.className = 'ast-node-header';
+
+        const label = document.createElement('span');
+        label.className = 'ast-label';
+        label.textContent = currentNode.label || currentNode.type || 'Unknown';
+
+        header.appendChild(label);
+
+        const metaParts = [];
+        if (currentNode.name) metaParts.push(currentNode.name);
+        if (currentNode.line) metaParts.push(`L${currentNode.line}`);
+
+        if (metaParts.length) {
+          const meta = document.createElement('span');
+          meta.className = 'ast-meta';
+          meta.textContent = metaParts.join(' • ');
+          header.appendChild(meta);
+        }
+
+        nodeWrap.appendChild(header);
+
+        const children = Array.isArray(currentNode.children) ? currentNode.children : [];
+        if (children.length) {
+          const childrenWrap = document.createElement('div');
+          childrenWrap.className = compact ? 'ast-node-children' : 'ast-node-children';
+
+          children.forEach((child) => {
+            if (child) {
+              childrenWrap.appendChild(buildNode(child));
+            }
+          });
+
+          nodeWrap.appendChild(childrenWrap);
+        }
+
+        return nodeWrap;
+      };
+
+      container.innerHTML = '';
+      const root = document.createElement('div');
+      root.className = compact ? 'ast-tree-root' : 'ast-tree-root';
+      root.appendChild(buildNode(node));
+      container.appendChild(root);
+    }
+
+    document.getElementById('openAstFullBtn').addEventListener('click', () => {
+      const modal = document.getElementById('astFullModal');
+      const fullTree = document.getElementById('astFullTree');
+      if (!modal || !fullTree || !window.__lastAstTree) return;
+      renderAstTree(window.__lastAstTree, fullTree, false);
+      modal.style.display = 'flex';
+    });
+
+    document.getElementById('closeAstFullBtn').addEventListener('click', () => {
+      document.getElementById('astFullModal').style.display = 'none';
+    });
+
+    // Render Diagnostics, Symbols, AST Tree & Metrics
+    function updateSystemDiagnostics(data) {
+      const issues = data.issues || [];
+      const metrics = data.metrics || {};
+      const symbols = data.symbols || [];
+      const astTree = data.ast_tree || {};
+
+      // 1. Update Problems Tab
+      document.getElementById('problemsBadge').textContent = issues.length;
+      const tbody = document.getElementById('problemsTbody');
+
+      if (issues.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--emerald); padding:20px;">✓ Clean Code — No system diagnostic issues detected.</td></tr>`;
+      } else {
+        tbody.innerHTML = issues.map(iss => `
+            <tr>
+              <td><span style="font-family:'JetBrains Mono'; font-weight:700; color:var(--cyan)">Ln ${iss.line || 1}</span></td>
+              <td><span class="dock-tab-badge" style="background:${iss.type === 'critical' ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)'}; color:${iss.type === 'critical' ? 'var(--rose)' : 'var(--amber)'}">${iss.type.toUpperCase()}</span></td>
+              <td style="font-family:'JetBrains Mono'; font-size:11px; color:var(--text-muted)">${iss.rule_id || 'SYS-00'}</td>
+              <td style="font-weight:600; color:var(--text-bright)">${iss.category}</td>
+              <td style="color:var(--text-muted)"><strong>${iss.title}</strong>: ${iss.description}</td>
+              <td style="text-align:center"><button class="btn-jump-line" onclick="jumpToLine(${iss.line || 1})">Jump</button></td>
+            </tr>
+          `).join('');
+      }
+
+      // 2. Update Symbol Tree
+      const symbolTreeEl = document.getElementById('symbolTree');
+      document.getElementById('symbolCount').textContent = `${symbols.length} Symbols`;
+
+      if (symbols.length === 0) {
+        symbolTreeEl.innerHTML = `<div style="font-size:11px; color:var(--text-dim); padding:8px;">No top-level functions or classes found.</div>`;
+      } else {
+        symbolTreeEl.innerHTML = symbols.map(sym => `
+            <div class="symbol-item" onclick="jumpToLine(${sym.line})">
+              <span>${sym.name}</span>
+              <span class="sym-type ${sym.type === 'function' ? 'func' : (sym.type === 'class' ? 'class' : 'imp')}">${sym.type.toUpperCase()} : ${sym.line}</span>
+            </div>
+          `).join('');
+      }
+
+      // 3. Update AST Inspector Tree
+      window.__lastAstTree = astTree;
+      renderAstTree(astTree, document.getElementById('astTreeView'), true);
+
+      // 4. Update System Metrics Cards
+      if (document.getElementById('metHealth')) document.getElementById('metHealth').textContent = `${metrics.health_score}%`;
+      if (document.getElementById('metMaintain')) document.getElementById('metMaintain').textContent = metrics.maintainability_index;
+      if (document.getElementById('metComplexity')) document.getElementById('metComplexity').textContent = `v(G) = ${metrics.complexity}`;
+      if (document.getElementById('metLines')) document.getElementById('metLines').textContent = metrics.non_empty_lines;
+
+      // Update 4 Stats Cards Live
+      if (document.getElementById('cardLinesVal')) {
+        document.getElementById('cardLinesVal').textContent = `${metrics.lines || metrics.non_empty_lines || 0} Lines`;
+      }
+      if (document.getElementById('cardFunctionsVal')) {
+        document.getElementById('cardFunctionsVal').textContent = `${metrics.function_count || 0} Functions`;
+      }
+      if (document.getElementById('cardComplexityVal')) {
+        document.getElementById('cardComplexityVal').textContent = metrics.time_complexity || 'O(1)';
+      }
+      if (document.getElementById('cardOutputSureVal')) {
+        const isSure = metrics.output_sure === 'Yes';
+        document.getElementById('cardOutputSureVal').textContent = metrics.output_sure || 'Yes';
+        const badgeEl = document.getElementById('cardOutputBadge');
+        if (badgeEl) {
+          badgeEl.textContent = isSure ? 'Verified' : 'Error Flagged';
+          badgeEl.className = isSure ? 'stat-badge success' : 'stat-badge warning';
+        }
+      }
+    }
+
+    // Actions: Upload File, Copy, Save, Export
+    function triggerFileUpload() {
+      document.getElementById('fileInputHidden').click();
+    }
+
+    document.getElementById('uploadCodeBtn').addEventListener('click', triggerFileUpload);
+    document.getElementById('sidebarUploadBtn').addEventListener('click', triggerFileUpload);
+
+    document.getElementById('fileInputHidden').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const content = evt.target.result;
+        const filename = file.name;
+
+        FILES_DB[filename] = content;
+        activeFile = filename;
+
+        const fileTree = document.getElementById('fileTree');
+        let existing = Array.from(fileTree.children).find(li => li.getAttribute('data-file') === filename);
+
+        if (!existing) {
+          const newLi = document.createElement('li');
+          newLi.setAttribute('data-file', filename);
+          newLi.innerHTML = `<span><svg class="icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="#38bdf8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> ${filename}</span><span class="file-meta">Uploaded</span>`;
+          fileTree.insertBefore(newLi, fileTree.firstChild);
+
+          newLi.addEventListener('click', () => {
+            Array.from(fileTree.children).forEach(i => i.classList.remove('active'));
+            newLi.classList.add('active');
+            activeFile = filename;
+            document.getElementById('currentTabLabel').innerHTML = `<svg class="icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="#38bdf8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> ${filename}`;
+            editor.setValue(FILES_DB[filename]);
+            logAudit(`Opened file '${filename}' in system editor.`);
+            runSystemReview();
+          });
+        }
+
+        Array.from(fileTree.children).forEach(li => li.classList.remove('active'));
+        const activeLi = existing || fileTree.firstChild;
+        activeLi.classList.add('active');
+
+        document.getElementById('currentTabLabel').innerHTML = `<svg class="icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="#38bdf8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> ${filename}`;
+        editor.setValue(content);
+        logAudit(`Uploaded local file '${filename}' (${file.size} bytes).`);
+        runSystemReview();
+      };
+
+      reader.readAsText(file);
+    });
+
+    document.getElementById('copyCodeBtn').addEventListener('click', async () => {
+      await navigator.clipboard.writeText(editor.getValue());
+      logAudit(`Copied code from '${activeFile}' to clipboard.`);
+      alert('Code copied to clipboard.');
+    });
+
+    document.getElementById('saveCodeBtn').addEventListener('click', () => {
+      FILES_DB[activeFile] = editor.getValue();
+      logAudit(`Saved changes to system file '${activeFile}'.`);
+      alert(`Saved ${activeFile} successfully.`);
+    });
+
+    document.getElementById('exportReportBtn').addEventListener('click', () => {
+      const code = editor.getValue();
+      fetch('/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      })
+        .then(res => res.json())
+        .then(data => {
+          const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${activeFile}_analysis_report.json`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          logAudit(`Exported JSON report for '${activeFile}'.`);
+        });
+    });
+
+    // Live Dark/Light Theme Switcher Logic
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeIconSun = document.getElementById('themeIconSun');
+    const themeIconMoon = document.getElementById('themeIconMoon');
+    const brandLogoImg = document.querySelector('.brand-logo-img');
+
+    // Always use 'default' CM theme — CSS handles the dark/light coloring via body.dark-theme class
+    editor.setOption('theme', 'default');
+
+    // Start in DARK mode for the main workspace, using the correct CodeLENSE logo asset
+    document.body.classList.add('dark-theme');
+    if (brandLogoImg) brandLogoImg.src = '/static/logo.png';
+    themeIconSun.style.display = 'inline-block';
+    themeIconMoon.style.display = 'none';
+
+    themeToggleBtn.addEventListener('click', () => {
+      const isDark = document.body.classList.toggle('dark-theme');
+      if (brandLogoImg) {
+        brandLogoImg.src = isDark ? '/static/logo.png' : '/static/logo_light.png';
+      }
+      if (isDark) {
+        themeIconSun.style.display = 'inline-block';
+        themeIconMoon.style.display = 'none';
+        logAudit("Switched to dark workspace mode.");
+      } else {
+        themeIconMoon.style.display = 'inline-block';
+        themeIconSun.style.display = 'none';
+        logAudit("Switched to light workspace mode.");
+      }
+    });
+
+    // Initial System Run
+    runSystemReview();
+  </script>
+</body>
+
+</html>
